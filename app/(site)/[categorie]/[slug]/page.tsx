@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
   if (!article) return { title: "Article introuvable" };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com";
   const articleUrl = `${siteUrl}/${catSlug}/${slug}`;
   const ogImage = article.imageUrl
     ? [{ url: article.imageUrl, alt: article.imageAlt || article.titre, width: 1200, height: 630 }]
@@ -114,12 +114,12 @@ export default async function ArticlePage({ params }: PageProps) {
       name: "Réalitte",
       logo: {
         "@type": "ImageObject",
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr"}/logo.png`,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com"}/logo.png`,
       },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr"}/${catSlug}/${slug}`,
+      "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com"}/${catSlug}/${slug}`,
     },
   };
 

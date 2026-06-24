@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               className="w-full px-4 py-3 border border-[#E0E0E0] text-[14px] outline-none focus:border-black transition-colors"
-              placeholder="admin@realitte.fr"
+              placeholder="admin@realitte.com"
             />
           </div>
 

@@ -143,7 +143,7 @@ export default async function AdminUtilisateursPage() {
                 type="email"
                 name="email"
                 required
-                placeholder="marie@realitte.fr"
+                placeholder="marie@realitte.com"
                 className="w-full px-3 py-2 border border-[#E8E8E8] rounded-lg text-[13px] outline-none focus:border-[#111] transition-colors"
               />
             </div>

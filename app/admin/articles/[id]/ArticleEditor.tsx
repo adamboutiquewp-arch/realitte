@@ -359,7 +359,7 @@ export default function ArticleEditor({ article, categories }: Props) {
             <p className="text-[#1558D6] text-[16px] hover:underline cursor-pointer">
               {form.metaTitle || form.titre}
             </p>
-            <p className="text-[#006621] text-[13px]">realitte.fr › …</p>
+            <p className="text-[#006621] text-[13px]">realitte.com › …</p>
             <p className="text-[#424242] text-[13px] mt-1 line-clamp-2">
               {form.metaDescription || form.chapo}
             </p>
