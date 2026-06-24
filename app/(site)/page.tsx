@@ -7,6 +7,7 @@ import EspacePartenaire from "@/components/home/EspacePartenaire";
 import SuccessStories from "@/components/home/SuccessStories";
 import Newsletter from "@/components/home/Newsletter";
 import ValuesBar from "@/components/home/ValuesBar";
+import NewsletterForm from "@/components/newsletter/NewsletterForm";
 import Link from "next/link";
 import type { ArticleCard, DerniereInfo } from "@/types";
 
@@ -163,6 +164,7 @@ export default async function HomePage() {
         </div>
       </div>
 
+      <NewsletterForm variant="section" />
       <ValuesBar />
     </>
   );

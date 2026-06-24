@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import InstallButton from "@/components/pwa/InstallButton";
+import NewsletterForm from "@/components/newsletter/NewsletterForm";
 
 const NAV_COL1 = [
   { label: "Accueil",   href: "/" },
@@ -51,7 +52,7 @@ export default async function Footer() {
     <footer className="bg-black text-white mt-auto">
       {/* Contenu principal */}
       <div className="container-site py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-8">
           {/* Bloc logo + baseline */}
           <div className="md:col-span-1">
             <Link href="/" className="inline-block mb-3">
@@ -100,6 +101,11 @@ export default async function Footer() {
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <NewsletterForm variant="footer" />
           </div>
 
           {/* Réseaux + Mentions légales */}
