@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
+import { prisma } from "../lib/prisma";
 
 const CATEGORIES = [
   { nom: "Actu",           slug: "actu",            couleur: "#E53935", ordre: 0 },
