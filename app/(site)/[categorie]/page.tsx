@@ -12,7 +12,6 @@ const SOUS_CATEGORIES: Record<string, string[]> = {
   sport:    ["Tout", "Football", "Basket", "Tennis", "F1", "Rugby"],
   economie: ["Tout", "Finance", "Entreprises", "Marchés", "Emploi"],
   politique:["Tout", "France", "International", "Élections", "Social"],
-  anecdote: ["Tout", "Société", "Insolite", "Histoire", "Vie"],
   "success-stories": ["Tout", "Entrepreneuriat", "Innovation", "Persévérance", "Sport"],
   actu:     ["Tout", "France", "Monde", "Société", "Santé"],
 };

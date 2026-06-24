@@ -12,7 +12,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/sport`, lastModified: new Date(), priority: 0.8 },
     { url: `${siteUrl}/economie`, lastModified: new Date(), priority: 0.8 },
     { url: `${siteUrl}/politique`, lastModified: new Date(), priority: 0.8 },
-    { url: `${siteUrl}/anecdote`, lastModified: new Date(), priority: 0.8 },
     { url: `${siteUrl}/success-stories`, lastModified: new Date(), priority: 0.8 },
     { url: `${siteUrl}/a-propos`, lastModified: new Date(), priority: 0.5 },
     { url: `${siteUrl}/newsletter`, lastModified: new Date(), priority: 0.4 },

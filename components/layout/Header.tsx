@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { label: "Sport",           href: "/sport" },
   { label: "Économie",        href: "/economie" },
   { label: "Politique",       href: "/politique" },
-  { label: "Anecdote",        href: "/anecdote" },
   { label: "Success Stories", href: "/success-stories" },
 ];
 

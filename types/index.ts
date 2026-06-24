@@ -73,8 +73,7 @@ export const CATEGORIES: Record<string, { couleur: string; class: string }> = {
   sport:            { couleur: "#E53935", class: "tag-sport" },
   economie:         { couleur: "#1565C0", class: "tag-economie" },
   politique:        { couleur: "#212121", class: "tag-politique" },
-  anecdote:         { couleur: "#C9A84C", class: "tag-anecdote" },
-  "success-stories":{ couleur: "#C9A84C", class: "tag-success" },
+  "success-stories":{ couleur: "#00838F", class: "tag-success" },
 };
 
 export function getCategoryClass(slug: string): string {

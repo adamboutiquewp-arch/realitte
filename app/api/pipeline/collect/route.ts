@@ -15,9 +15,6 @@ const RSS_SOURCES = [
   { url: "https://bfmbusiness.bfmtv.com/rss/bfmbusiness/",          nom: "BFM Business",       categorie: "economie" },
   // Politique
   { url: "https://www.lefigaro.fr/rss/figaro_politique.xml",        nom: "Le Figaro Politique", categorie: "politique" },
-  // Anecdote / Société
-  { url: "https://www.20minutes.fr/feeds/rss/societe.xml",          nom: "20 Minutes Société", categorie: "anecdote" },
-  { url: "https://feeds.bbci.co.uk/french/rss.xml",                 nom: "BBC Afrique",        categorie: "anecdote" },
   // Success Stories / Entrepreneuriat
   { url: "https://www.forbes.fr/feed/",                             nom: "Forbes France",      categorie: "success-stories" },
   { url: "https://www.maddyness.com/feed/",                         nom: "Maddyness",          categorie: "success-stories" },

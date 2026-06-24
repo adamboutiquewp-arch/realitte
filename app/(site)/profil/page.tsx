@@ -8,7 +8,6 @@ const CATEGORIES = [
   { nom: "Sport",          slug: "sport",           couleur: "#1565C0" },
   { nom: "Économie",       slug: "economie",        couleur: "#2E7D32" },
   { nom: "Politique",      slug: "politique",       couleur: "#6A1B9A" },
-  { nom: "Anecdote",       slug: "anecdote",        couleur: "#C9A84C" },
   { nom: "Success Stories",slug: "success-stories", couleur: "#00838F" },
 ];
 
