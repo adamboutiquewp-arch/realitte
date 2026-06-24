@@ -6,14 +6,35 @@ import { useState, useEffect } from "react";
 import SearchModal from "./SearchModal";
 
 const NAV_ITEMS = [
-  { label: "Actu",            href: "/actu" },
-  { label: "Sport",           href: "/sport" },
-  { label: "Économie",        href: "/economie" },
-  { label: "Politique",       href: "/politique" },
-  { label: "Success Stories", href: "/success-stories" },
-  { label: "People",          href: "/people" },
-  { label: "Santé & Beauté",  href: "/sante-beaute" },
-  { label: "Fait Divers",     href: "/fait-divers" },
+  { label: "Actu",            href: "/actu",            couleur: "#E53935" },
+  { label: "Sport",           href: "/sport",           couleur: "#1565C0" },
+  { label: "Économie",        href: "/economie",        couleur: "#2E7D32" },
+  { label: "Politique",       href: "/politique",       couleur: "#6A1B9A" },
+  { label: "People",          href: "/people",          couleur: "#E91E63" },
+  { label: "Santé & Beauté",  href: "/sante-beaute",   couleur: "#00897B" },
+  { label: "Fait Divers",     href: "/fait-divers",    couleur: "#455A64" },
+  { label: "Success Stories", href: "/success-stories", couleur: "#00838F" },
+];
+
+const NAV_GROUPES = [
+  {
+    titre: "Actualités",
+    items: [
+      { label: "Actu",      href: "/actu",      couleur: "#E53935" },
+      { label: "Sport",     href: "/sport",     couleur: "#1565C0" },
+      { label: "Économie",  href: "/economie",  couleur: "#2E7D32" },
+      { label: "Politique", href: "/politique", couleur: "#6A1B9A" },
+      { label: "Fait Divers", href: "/fait-divers", couleur: "#455A64" },
+    ],
+  },
+  {
+    titre: "Lifestyle",
+    items: [
+      { label: "People",          href: "/people",          couleur: "#E91E63" },
+      { label: "Santé & Beauté",  href: "/sante-beaute",   couleur: "#00897B" },
+      { label: "Success Stories", href: "/success-stories", couleur: "#00838F" },
+    ],
+  },
 ];
 
 const SOCIAL_LINKS = [
@@ -144,22 +165,26 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile : nav catégories scrollable */}
-        <div className="md:hidden border-t border-[#E0E0E0] overflow-x-auto scrollbar-none">
-          <div className="flex items-center gap-0 px-4 min-w-max">
-            {NAV_ITEMS.map(({ label, href }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`flex-shrink-0 px-4 py-3 text-[12px] font-bold tracking-widest uppercase whitespace-nowrap border-b-2 transition-colors ${
-                  isActive(href)
-                    ? "text-black border-[#E53935]"
-                    : "text-[#9E9E9E] border-transparent hover:text-black"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+        {/* Mobile : nav catégories scrollable — style pills */}
+        <div className="md:hidden border-t border-[#F0F0F0] overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2 px-4 py-2.5 min-w-max">
+            {NAV_ITEMS.map(({ label, href, couleur }) => {
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all"
+                  style={
+                    active
+                      ? { backgroundColor: couleur, color: "#fff" }
+                      : { backgroundColor: `${couleur}14`, color: couleur }
+                  }
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </header>
@@ -180,17 +205,29 @@ export default function Header() {
                 <CloseIcon size={20} />
               </button>
             </div>
-            <nav className="flex-1 py-4 overflow-y-auto">
-              {NAV_ITEMS.map(({ label, href }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`block px-6 py-4 text-[14px] font-bold tracking-wider uppercase border-b border-[#F5F5F5] transition-colors ${
-                    isActive(href) ? "text-[#E53935]" : "text-black hover:text-[#E53935]"
-                  }`}
-                >
-                  {label}
-                </Link>
+            <nav className="flex-1 py-2 overflow-y-auto">
+              {NAV_GROUPES.map((groupe) => (
+                <div key={groupe.titre} className="mb-1">
+                  <p className="px-6 pt-4 pb-2 text-[10px] font-black tracking-[0.2em] uppercase text-[#bbb]">
+                    {groupe.titre}
+                  </p>
+                  {groupe.items.map(({ label, href, couleur }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`flex items-center gap-3 px-6 py-3.5 text-[14px] font-bold transition-colors ${
+                        isActive(href) ? "text-[#E53935]" : "text-[#111] hover:text-[#E53935]"
+                      }`}
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: couleur }}
+                      />
+                      {label}
+                    </Link>
+                  ))}
+                  <div className="mx-6 border-b border-[#F0F0F0]" />
+                </div>
               ))}
             </nav>
             <div className="p-5 border-t border-[#E0E0E0]">
