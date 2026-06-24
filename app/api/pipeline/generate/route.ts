@@ -160,12 +160,17 @@ export async function GET(req: NextRequest) {
         parsed = JSON.parse(match[0]);
       }
 
-      const categorie = await prisma.categorie.findUnique({
+      let categorie = await prisma.categorie.findUnique({
         where: { slug: parsed.categorieSlug || "actu" },
       });
 
+      // Fallback sur "actu" si la catégorie n'existe pas encore en DB
       if (!categorie) {
-        throw new Error(`Catégorie inconnue: ${parsed.categorieSlug}`);
+        categorie = await prisma.categorie.findUnique({ where: { slug: "actu" } });
+      }
+
+      if (!categorie) {
+        throw new Error(`Catégorie introuvable (même actu manque)`);
       }
 
       const baseSlug = slugify(parsed.titre);
