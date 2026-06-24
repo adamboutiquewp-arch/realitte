@@ -44,12 +44,10 @@ async function getHomeData() {
         }),
 
         prisma.article.findMany({
-          where: {
-            statut: "PUBLISHED",
-            categorie: { slug: "success-stories" },
-          },
+          where: { statut: "PUBLISHED" },
           include: { categorie: true },
           orderBy: { datePublication: "desc" },
+          skip: 5,
           take: 3,
         }),
       ]);

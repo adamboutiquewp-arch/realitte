@@ -11,11 +11,11 @@ export default function SuccessStories({ articles }: SuccessStoriesProps) {
     <section className="py-6 md:py-12">
       <div className="flex items-center justify-between mb-4 md:mb-8">
         <h2 className="text-[20px] md:text-[26px] font-black tracking-tight uppercase">
-          Success Stories
+          Derniers articles
         </h2>
         <Link
-          href="/success-stories"
-          className="text-[12px] font-bold tracking-widest uppercase text-[#9E9E9E] hover:text-[#C9A84C] transition-colors"
+          href="/actu"
+          className="text-[12px] font-bold tracking-widest uppercase text-[#9E9E9E] hover:text-[#E53935] transition-colors"
         >
           Voir tout →
         </Link>
