@@ -43,10 +43,10 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/articles?q=${encodeURIComponent(query)}&limit=5`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         if (res.ok) {
           const data = await res.json();
-          setResults(data.articles || []);
+          setResults((data || []).slice(0, 5));
         }
       } catch {
         setResults([]);
@@ -125,6 +125,18 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
         {query.length >= 2 && !loading && results.length === 0 && (
           <div className="px-5 py-8 text-center text-[#9E9E9E] text-sm">
             Aucun résultat pour &ldquo;{query}&rdquo;
+          </div>
+        )}
+
+        {results.length > 0 && (
+          <div className="px-5 py-3 border-t border-[#F0F0F0]">
+            <Link
+              href={`/recherche?q=${encodeURIComponent(query)}`}
+              onClick={onClose}
+              className="text-[12px] font-bold text-[#E53935] hover:underline"
+            >
+              Voir tous les résultats →
+            </Link>
           </div>
         )}
       </div>
