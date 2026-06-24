@@ -97,16 +97,16 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
         )}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
 
-        <div className="container-site relative z-10 py-14 md:py-20 flex flex-col justify-center min-h-[320px]">
-          <div className="inline-flex items-center px-3 py-1 mb-5" style={{ backgroundColor: categorie.couleur }}>
-            <span className="text-[11px] font-bold tracking-widest uppercase text-white">
+        <div className="container-site relative z-10 py-8 md:py-20 flex flex-col justify-center min-h-[200px] md:min-h-[320px]">
+          <div className="inline-flex items-center px-3 py-1 mb-3 md:mb-5" style={{ backgroundColor: categorie.couleur }}>
+            <span className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-white">
               {categorie.nom}
             </span>
           </div>
-          <h1 className="text-white text-3xl md:text-5xl font-black tracking-tight mb-3 max-w-xl">
+          <h1 className="text-white text-2xl md:text-5xl font-black tracking-tight mb-2 md:mb-3 max-w-xl">
             {getHeroTitle(catSlug)}
           </h1>
-          <p className="text-white/70 text-base md:text-lg max-w-lg">
+          <p className="text-white/70 text-sm md:text-lg max-w-lg hidden sm:block">
             {getHeroSubtitle(catSlug)}
           </p>
         </div>

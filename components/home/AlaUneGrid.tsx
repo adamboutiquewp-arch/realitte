@@ -10,9 +10,9 @@ export default function AlaUneGrid({ articles }: AlaUneGridProps) {
   if (articles.length === 0) return null;
 
   return (
-    <section className="py-10 md:py-12">
-      <div className="flex items-center justify-between mb-6 md:mb-8">
-        <h2 className="text-[22px] md:text-[26px] font-black tracking-tight uppercase">
+    <section className="py-6 md:py-12">
+      <div className="flex items-center justify-between mb-4 md:mb-8">
+        <h2 className="text-[20px] md:text-[26px] font-black tracking-tight uppercase">
           À la une
         </h2>
         <Link
@@ -23,7 +23,7 @@ export default function AlaUneGrid({ articles }: AlaUneGridProps) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
         {articles.slice(0, 4).map((article) => (
           <ArticleCard key={article.id} article={article} variant="grid" />
         ))}

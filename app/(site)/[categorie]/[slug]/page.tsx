@@ -113,7 +113,7 @@ export default async function ArticlePage({ params }: PageProps) {
       />
 
       {/* ── Hero image ── */}
-      <div className="relative bg-black" style={{ height: "min(55vh, 480px)" }}>
+      <div className="relative bg-black" style={{ height: "min(48vh, 460px)" }}>
         {article.imageUrl && (
           <Image
             src={article.imageUrl}
@@ -124,24 +124,21 @@ export default async function ArticlePage({ params }: PageProps) {
             sizes="100vw"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 container-site pb-8">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 container-site pb-5 md:pb-8">
           <Link
             href={`/${article.categorie.slug}`}
-            className="inline-block mb-3"
+            className="inline-block mb-2 md:mb-3"
           >
             <span
-              className="text-[11px] font-bold tracking-widest uppercase px-3 py-1"
-              style={{
-                color: "#fff",
-                backgroundColor: article.categorie.couleur,
-              }}
+              className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase px-3 py-1"
+              style={{ color: "#fff", backgroundColor: article.categorie.couleur }}
             >
               {article.categorie.nom}
             </span>
           </Link>
           <h1
-            className="text-white text-2xl md:text-4xl font-black leading-tight max-w-3xl"
+            className="text-white text-[22px] sm:text-3xl md:text-4xl font-black leading-tight max-w-3xl"
             style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
             {article.titre}
@@ -167,7 +164,7 @@ export default async function ArticlePage({ params }: PageProps) {
             </div>
 
             {/* Chapô */}
-            <p className="text-[18px] font-semibold text-[#424242] leading-relaxed mb-8 italic">
+            <p className="text-[15px] md:text-[18px] font-semibold text-[#424242] leading-relaxed mb-6 md:mb-8 italic">
               {article.chapo}
             </p>
 
@@ -211,7 +208,7 @@ export default async function ArticlePage({ params }: PageProps) {
               <p className="text-[12px] font-bold tracking-widest uppercase text-[#9E9E9E] mb-3">
                 Partager
               </p>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <ShareButton
                   href={`https://x.com/intent/tweet?text=${encodeURIComponent(article.titre)}&url=${process.env.NEXT_PUBLIC_SITE_URL}/${catSlug}/${slug}`}
                   label="X (Twitter)"
@@ -260,7 +257,7 @@ function ShareButton({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="px-4 py-2 border border-[#E0E0E0] text-[11px] font-bold tracking-wider uppercase text-[#424242] hover:border-black hover:text-black transition-colors"
+      className="flex items-center justify-center sm:inline-flex px-4 py-3 sm:py-2.5 min-h-[44px] border border-[#E0E0E0] text-[12px] font-bold tracking-wider uppercase text-[#424242] hover:border-black hover:text-black transition-colors"
     >
       {label}
     </a>
