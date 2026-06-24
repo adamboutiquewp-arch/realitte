@@ -125,9 +125,26 @@ export async function GET(req: NextRequest) {
 
       const wordCount = parsed.contenu.replace(/<[^>]+>/g, "").split(/\s+/).length;
 
-      // Cherche une image Unsplash basée sur les tags ou le titre
-      const imageQuery = (parsed.tags?.[0] || parsed.titre).slice(0, 50);
-      const image = await fetchUnsplashImage(imageQuery);
+      // Récupère l'image source depuis le JSON stocké lors de la collecte
+      let sourceImageUrl: string | null = null;
+      let sourceNom = "RSS";
+      try {
+        const data = JSON.parse(source.contenuBrut);
+        sourceImageUrl = data.imageUrl || null;
+        sourceNom = data.sourceNom || "RSS";
+      } catch {
+        // ancien format texte brut — pas d'image source
+      }
+
+      // Priorité : image du journal source → Unsplash en fallback
+      let imageUrl: string | null = sourceImageUrl;
+      let imageAlt: string | null = parsed.titre;
+      if (!imageUrl) {
+        const imageQuery = (parsed.tags?.[0] || parsed.titre).slice(0, 50);
+        const unsplash = await fetchUnsplashImage(imageQuery);
+        imageUrl = unsplash?.url || null;
+        imageAlt = unsplash?.alt || parsed.titre;
+      }
 
       await prisma.article.create({
         data: {
@@ -139,13 +156,13 @@ export async function GET(req: NextRequest) {
           sousCategorie: parsed.sousCategorie || null,
           tags: parsed.tags || [],
           sourceUrl: source.url,
-          sourceNom: "RSS",
+          sourceNom,
           statut: "PENDING",
           metaTitle: parsed.metaTitle || null,
           metaDescription: parsed.metaDescription || null,
           tempsLecture: Math.max(1, Math.ceil(wordCount / 200)),
-          imageUrl: image?.url || null,
-          imageAlt: image?.alt || null,
+          imageUrl,
+          imageAlt,
         },
       });
 

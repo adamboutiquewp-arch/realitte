@@ -23,7 +23,39 @@ const RSS_SOURCES = [
   { url: "https://www.maddyness.com/feed/",                         nom: "Maddyness" },
 ];
 
-const parser = new Parser({ timeout: 10000 });
+// Configure le parser pour extraire les images des flux RSS
+type CustomItem = {
+  mediaContent?: { $?: { url?: string } };
+  mediaThumbnail?: { $?: { url?: string } };
+  "media:content"?: { $?: { url?: string } };
+  "media:thumbnail"?: { $?: { url?: string } };
+};
+
+const parser = new Parser<Record<string, unknown>, CustomItem>({
+  timeout: 10000,
+  customFields: {
+    item: [
+      ["media:content",   "mediaContent",   { keepArray: false }],
+      ["media:thumbnail", "mediaThumbnail", { keepArray: false }],
+    ],
+  },
+});
+
+function extractSourceImage(item: Parser.Item & CustomItem): string | null {
+  // 1. enclosure (standard RSS)
+  if (item.enclosure?.url) return item.enclosure.url;
+  // 2. media:content (common in news feeds)
+  const mc = item.mediaContent || item["media:content"];
+  if (mc?.$?.url) return mc.$.url;
+  // 3. media:thumbnail
+  const mt = item.mediaThumbnail || item["media:thumbnail"];
+  if (mt?.$?.url) return mt.$.url;
+  // 4. Try to extract from content/description HTML
+  const html = item.content || item.summary || "";
+  const imgMatch = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (imgMatch?.[1]) return imgMatch[1];
+  return null;
+}
 
 export async function GET(req: NextRequest) {
   const cronSecret = req.headers.get("x-cron-secret");
@@ -51,17 +83,20 @@ export async function GET(req: NextRequest) {
           continue;
         }
 
+        const sourceImage = extractSourceImage(item as Parser.Item & CustomItem);
+
+        // Stocke les données en JSON pour récupérer l'image dans generate
         await prisma.sourceBrute.create({
           data: {
             url: item.link,
             titreOriginal: item.title,
-            contenuBrut: [
-              item.title,
-              item.contentSnippet || item.summary || "",
-              item.content || "",
-            ]
-              .filter(Boolean)
-              .join("\n\n"),
+            contenuBrut: JSON.stringify({
+              title: item.title,
+              description: item.contentSnippet || item.summary || "",
+              content: item.content || "",
+              imageUrl: sourceImage,
+              sourceNom: source.nom,
+            }),
             traite: false,
           },
         });
