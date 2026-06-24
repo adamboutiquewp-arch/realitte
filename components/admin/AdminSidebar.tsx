@@ -20,9 +20,10 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Contenu",
     items: [
       { label: "Tableau de bord", href: "/admin",              icon: IconDashboard },
-      { label: "Articles",        href: "/admin/articles",     icon: IconArticle },
+      { label: "Articles",           href: "/admin/articles",  icon: IconArticle },
       { label: "Générer un article", href: "/admin/generer",   icon: IconGenerate },
-      { label: "Catégories",      href: "/admin/categories",   icon: IconTag },
+      { label: "Gestion des unes",   href: "/admin/une",       icon: IconStar },
+      { label: "Catégories",         href: "/admin/categories", icon: IconTag },
     ],
   },
   {
@@ -138,6 +139,14 @@ function IconGenerate({ className = "" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+  );
+}
+
+function IconStar({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
     </svg>
   );
 }
