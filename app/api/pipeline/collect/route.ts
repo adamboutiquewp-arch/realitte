@@ -61,6 +61,14 @@ const RSS_SOURCES = [
   { url: "https://www.lefigaro.fr/rss/figaro_faits-divers.xml",          nom: "Le Figaro FD",          categorie: "actu", sousCategorie: "Fait Divers" },
 
   // ── Créateurs de contenu ─────────────────────────────────
+  // Sources très ciblées créateurs (YouTube, TikTok, streaming, influenceurs)
+  { url: "https://www.tubefilter.com/feed/",                             nom: "Tubefilter",            categorie: "createurs", sousCategorie: "YouTube" },
+  { url: "https://www.socialmediatoday.com/rss.xml",                     nom: "Social Media Today",    categorie: "createurs", sousCategorie: "Réseaux Sociaux" },
+  { url: "https://influencermarketinghub.com/feed/",                     nom: "Influencer Marketing Hub", categorie: "createurs", sousCategorie: "Réseaux Sociaux" },
+  { url: "https://www.theverge.com/rss/index.xml",                       nom: "The Verge",             categorie: "createurs", sousCategorie: "Tech & Créa" },
+  { url: "https://variety.com/v/digital/feed/",                          nom: "Variety Digital",       categorie: "createurs", sousCategorie: "Streaming" },
+  { url: "https://deadline.com/category/digital/feed/",                  nom: "Deadline Digital",      categorie: "createurs", sousCategorie: "Streaming" },
+  // Sources françaises avec contenu créateurs
   { url: "https://www.melty.fr/rss.xml",                                 nom: "Melty",                 categorie: "createurs", sousCategorie: null },
   { url: "https://www.konbini.com/fr/feed/",                             nom: "Konbini",               categorie: "createurs", sousCategorie: null },
   { url: "https://www.purebreak.com/rss.xml",                            nom: "Purebreak",             categorie: "createurs", sousCategorie: null },
@@ -68,8 +76,6 @@ const RSS_SOURCES = [
   { url: "https://siecledigital.fr/feed/",                               nom: "Siècle Digital",        categorie: "createurs", sousCategorie: "Tech & Créa" },
   { url: "https://www.creapills.com/feed",                               nom: "Creapills",             categorie: "createurs", sousCategorie: "Tech & Créa" },
   { url: "https://www.madmoizelle.com/feed",                             nom: "Madmoizelle",           categorie: "createurs", sousCategorie: null },
-  { url: "https://www.tubefilter.com/feed/",                             nom: "Tubefilter",            categorie: "createurs", sousCategorie: "YouTube" },
-  { url: "https://www.socialmediatoday.com/rss.xml",                     nom: "Social Media Today",    categorie: "createurs", sousCategorie: "Réseaux Sociaux" },
 
   // ── International (traduit par Claude) ───────────────────
   { url: "https://feeds.bbci.co.uk/news/world/rss.xml",                  nom: "BBC World",             categorie: "actu", sousCategorie: null },
