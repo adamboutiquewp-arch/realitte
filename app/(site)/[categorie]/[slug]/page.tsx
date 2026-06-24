@@ -120,7 +120,7 @@ export default async function ArticlePage({ params }: PageProps) {
             alt={article.imageAlt || article.titre}
             fill
             priority
-            className="object-cover opacity-70"
+            className="object-cover object-top opacity-70"
             sizes="100vw"
           />
         )}
