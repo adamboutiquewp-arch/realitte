@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDateFull, tempsLectureLabel } from "@/lib/utils";
 import ArticleCard from "@/components/article/ArticleCard";
 import EspacePartenaire from "@/components/home/EspacePartenaire";
+import ShareButtons from "@/components/article/ShareButtons";
 import type { ArticleCard as ArticleCardType } from "@/types";
 
 interface PageProps {
@@ -223,26 +224,10 @@ export default async function ArticlePage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Partage */}
-            <div className="mt-8 pt-6 border-t border-[#E0E0E0]">
-              <p className="text-[12px] font-bold tracking-widest uppercase text-[#9E9E9E] mb-3">
-                Partager
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                <ShareButton
-                  href={`https://x.com/intent/tweet?text=${encodeURIComponent(article.titre)}&url=${process.env.NEXT_PUBLIC_SITE_URL}/${catSlug}/${slug}`}
-                  label="X (Twitter)"
-                />
-                <ShareButton
-                  href={`https://www.linkedin.com/shareArticle?mini=true&url=${process.env.NEXT_PUBLIC_SITE_URL}/${catSlug}/${slug}&title=${encodeURIComponent(article.titre)}`}
-                  label="LinkedIn"
-                />
-                <ShareButton
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${process.env.NEXT_PUBLIC_SITE_URL}/${catSlug}/${slug}`}
-                  label="Facebook"
-                />
-              </div>
-            </div>
+            <ShareButtons
+              url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com"}/${catSlug}/${slug}`}
+              titre={article.titre}
+            />
           </article>
 
           {/* Sidebar */}
@@ -271,15 +256,3 @@ export default async function ArticlePage({ params }: PageProps) {
   );
 }
 
-function ShareButton({ href, label }: { href: string; label: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center justify-center sm:inline-flex px-4 py-3 sm:py-2.5 min-h-[44px] border border-[#E0E0E0] text-[12px] font-bold tracking-wider uppercase text-[#424242] hover:border-black hover:text-black transition-colors"
-    >
-      {label}
-    </a>
-  );
-}
