@@ -15,6 +15,7 @@ const SOUS_CATEGORIES: Record<string, string[]> = {
   politique:       ["Tout", "France", "International", "Élections", "Social"],
   "success-stories":["Tout", "Entrepreneuriat", "Innovation", "Persévérance", "Sport"],
   actu:            ["Tout", "France", "Monde", "Société", "Économie", "People", "Santé & Beauté", "Success Stories", "Fait Divers"],
+  createurs:       ["Tout", "YouTube", "TikTok", "Streaming", "Podcast", "Réseaux Sociaux", "Tech & Créa"],
   people:          ["Tout", "Célébrités", "Royauté", "Cinéma", "Musique", "Télé"],
   "sante-beaute":  ["Tout", "Santé", "Beauté", "Bien-être", "Nutrition", "Forme"],
   "fait-divers":   ["Tout", "Crimes", "Accidents", "Justice", "Disparitions"],

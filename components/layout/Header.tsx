@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { label: "Actu",          href: "/actu",          couleur: "#E53935" },
   { label: "Sport",         href: "/sport",         couleur: "#1565C0" },
   { label: "Politique",     href: "/politique",     couleur: "#6A1B9A" },
+  { label: "Créateurs",     href: "/createurs",     couleur: "#7C3AED" },
   { label: "Entrepreneurs", href: "/entrepreneurs", couleur: "#C9A84C" },
 ];
 
@@ -19,6 +20,7 @@ const NAV_GROUPES = [
       { label: "Actu",          href: "/actu",          couleur: "#E53935" },
       { label: "Sport",         href: "/sport",         couleur: "#1565C0" },
       { label: "Politique",     href: "/politique",     couleur: "#6A1B9A" },
+      { label: "Créateurs",     href: "/createurs",     couleur: "#7C3AED" },
       { label: "Entrepreneurs", href: "/entrepreneurs", couleur: "#C9A84C" },
     ],
   },

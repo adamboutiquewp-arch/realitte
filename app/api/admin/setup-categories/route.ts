@@ -3,9 +3,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 const NEW_CATEGORIES = [
-  { nom: "People",        slug: "people",       couleur: "#E91E63", ordre: 6 },
-  { nom: "Santé & Beauté",slug: "sante-beaute", couleur: "#00897B", ordre: 7 },
-  { nom: "Fait Divers",   slug: "fait-divers",  couleur: "#455A64", ordre: 8 },
+  { nom: "People",           slug: "people",      couleur: "#E91E63", ordre: 6 },
+  { nom: "Santé & Beauté",   slug: "sante-beaute",couleur: "#00897B", ordre: 7 },
+  { nom: "Fait Divers",      slug: "fait-divers", couleur: "#455A64", ordre: 8 },
+  { nom: "Créateurs",        slug: "createurs",   couleur: "#7C3AED", ordre: 9 },
 ];
 
 export async function POST() {

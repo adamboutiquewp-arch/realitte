@@ -60,6 +60,17 @@ const RSS_SOURCES = [
   { url: "https://www.bfmtv.com/police-justice/rss/",                    nom: "BFMTV Police",          categorie: "actu", sousCategorie: "Fait Divers" },
   { url: "https://www.lefigaro.fr/rss/figaro_faits-divers.xml",          nom: "Le Figaro FD",          categorie: "actu", sousCategorie: "Fait Divers" },
 
+  // ── Créateurs de contenu ─────────────────────────────────
+  { url: "https://www.melty.fr/rss.xml",                                 nom: "Melty",                 categorie: "createurs", sousCategorie: null },
+  { url: "https://www.konbini.com/fr/feed/",                             nom: "Konbini",               categorie: "createurs", sousCategorie: null },
+  { url: "https://www.purebreak.com/rss.xml",                            nom: "Purebreak",             categorie: "createurs", sousCategorie: null },
+  { url: "https://www.numerama.com/feed/",                               nom: "Numerama",              categorie: "createurs", sousCategorie: "Tech & Créa" },
+  { url: "https://siecledigital.fr/feed/",                               nom: "Siècle Digital",        categorie: "createurs", sousCategorie: "Tech & Créa" },
+  { url: "https://www.creapills.com/feed",                               nom: "Creapills",             categorie: "createurs", sousCategorie: "Tech & Créa" },
+  { url: "https://www.madmoizelle.com/feed",                             nom: "Madmoizelle",           categorie: "createurs", sousCategorie: null },
+  { url: "https://www.tubefilter.com/feed/",                             nom: "Tubefilter",            categorie: "createurs", sousCategorie: "YouTube" },
+  { url: "https://www.socialmediatoday.com/rss.xml",                     nom: "Social Media Today",    categorie: "createurs", sousCategorie: "Réseaux Sociaux" },
+
   // ── International (traduit par Claude) ───────────────────
   { url: "https://feeds.bbci.co.uk/news/world/rss.xml",                  nom: "BBC World",             categorie: "actu", sousCategorie: null },
   { url: "https://www.theguardian.com/world/rss",                        nom: "The Guardian",          categorie: "actu", sousCategorie: null },
