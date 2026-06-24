@@ -6,10 +6,10 @@ import Image from "next/image";
 interface ArticleOption {
   id: string;
   titre: string;
-  imageUrl: string | null;
-  chapo: string;
-  slug: string;
-  featuredCategorie: boolean;
+  imageUrl?: string | null;
+  chapo?: string;
+  slug?: string;
+  featuredCategorie?: boolean;
 }
 
 interface Props {
