@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/utils";
 import DeleteArticleButton from "@/components/admin/DeleteArticleButton";
 import FeaturedButton from "@/components/admin/FeaturedButton";
 import FeaturedCategorieButton from "@/components/admin/FeaturedCategorieButton";
+import ToggleArticleButton from "@/components/admin/ToggleArticleButton";
 
 export const metadata: Metadata = { title: "Articles" };
 export const dynamic = "force-dynamic";
@@ -180,6 +181,9 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2 flex-wrap">
+                        {(a.statut === "PUBLISHED" || a.statut === "DRAFT") && (
+                          <ToggleArticleButton id={a.id} statut={a.statut} />
+                        )}
                         {a.statut === "PUBLISHED" && (
                           <FeaturedCategorieButton
                             id={a.id}
