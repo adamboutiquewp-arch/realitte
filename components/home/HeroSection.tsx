@@ -20,7 +20,7 @@ export default function HeroSection({ article }: HeroSectionProps) {
             alt={article.imageAlt || article.titre}
             fill
             priority
-            className="object-cover object-center opacity-90"
+            className="object-cover object-top opacity-90"
             sizes="(max-width: 1024px) 100vw, 70vw"
           />
         </div>
