@@ -84,33 +84,65 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
   return (
     <>
       {/* ── Hero catégorie ── */}
-      <section className="relative bg-black overflow-hidden" style={{ minHeight: 320 }}>
+      <section className="relative bg-black overflow-hidden min-h-[260px] sm:min-h-[380px] md:min-h-[460px]">
         {heroArticle?.imageUrl && (
           <div className="absolute inset-0">
             <Image
               src={heroArticle.imageUrl}
-              alt={categorie.nom}
+              alt={heroArticle.titre}
               fill
               priority
-              className="object-cover opacity-40"
+              className="object-cover object-center opacity-90"
               sizes="100vw"
             />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
+        {/* Overlay léger — dégradé du bas uniquement */}
+        <div className="absolute inset-0" style={{
+          background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.30) 50%, rgba(0,0,0,0.05) 100%)"
+        }} />
 
-        <div className="container-site relative z-10 py-8 md:py-20 flex flex-col justify-center min-h-[200px] md:min-h-[320px]">
-          <div className="inline-flex items-center px-3 py-1 mb-3 md:mb-5" style={{ backgroundColor: categorie.couleur }}>
-            <span className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-white">
+        <div className="container-site relative z-10 flex flex-col justify-end min-h-[260px] sm:min-h-[380px] md:min-h-[460px] px-5 sm:px-8 pb-7 sm:pb-12 pt-6">
+          {/* Badge catégorie */}
+          <div className="inline-flex items-center px-3 py-1.5 mb-3 self-start" style={{ backgroundColor: categorie.couleur }}>
+            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white">
               {categorie.nom}
             </span>
           </div>
-          <h1 className="text-white text-2xl md:text-5xl font-black tracking-tight mb-2 md:mb-3 max-w-xl">
-            {getHeroTitle(catSlug)}
-          </h1>
-          <p className="text-white/70 text-sm md:text-lg max-w-lg hidden sm:block">
-            {getHeroSubtitle(catSlug)}
-          </p>
+
+          {heroArticle ? (
+            /* Article en une */
+            <div className="max-w-[520px]">
+              <h1
+                className="text-white font-black leading-[1.05] tracking-tight mb-2 sm:mb-4"
+                style={{ fontSize: "clamp(20px, 4vw, 44px)" }}
+              >
+                {heroArticle.titre}
+              </h1>
+              {heroArticle.chapo && (
+                <p className="text-white/75 text-[13px] sm:text-[15px] leading-relaxed mb-4 line-clamp-2 hidden sm:block">
+                  {heroArticle.chapo}
+                </p>
+              )}
+              <Link
+                href={`/${catSlug}/${heroArticle.slug}`}
+                className="inline-flex items-center px-5 py-3 bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors w-full sm:w-auto justify-center sm:justify-start"
+              >
+                Lire l&apos;article
+              </Link>
+            </div>
+          ) : (
+            /* Fallback si aucun article */
+            <div className="max-w-[520px]">
+              <h1
+                className="text-white font-black leading-tight tracking-tight mb-2"
+                style={{ fontSize: "clamp(20px, 4vw, 44px)" }}
+              >
+                {getHeroTitle(catSlug)}
+              </h1>
+              <p className="text-white/70 text-[14px] hidden sm:block">{getHeroSubtitle(catSlug)}</p>
+            </div>
+          )}
         </div>
       </section>
 
