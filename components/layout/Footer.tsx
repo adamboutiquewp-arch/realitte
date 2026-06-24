@@ -8,7 +8,8 @@ const NAV_COL1 = [
 ];
 
 const NAV_COL2 = [
-  { label: "À propos", href: "/a-propos" },
+  { label: "Entrepreneurs", href: "/entrepreneurs" },
+  { label: "À propos",      href: "/a-propos" },
 ];
 
 const SOCIAL_LINKS = [
