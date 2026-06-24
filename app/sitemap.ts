@@ -19,6 +19,28 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
+    // Pages tags — on récupère tous les tags uniques des articles publiés
+    const articlesWithTags = await prisma.article.findMany({
+      where: { statut: "PUBLISHED" },
+      select: { tags: true, datePublication: true },
+    });
+
+    const tagMap = new Map<string, Date>();
+    for (const a of articlesWithTags) {
+      for (const tag of a.tags) {
+        const existing = tagMap.get(tag);
+        const pubDate = a.datePublication || new Date();
+        if (!existing || pubDate > existing) tagMap.set(tag, pubDate);
+      }
+    }
+
+    const tagPages: MetadataRoute.Sitemap = Array.from(tagMap.entries()).map(([tag, date]) => ({
+      url: `${SITE_URL}/tag/${encodeURIComponent(tag)}`,
+      lastModified: date,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    }));
+
     const articles = await prisma.article.findMany({
       where: { statut: "PUBLISHED" },
       select: {
@@ -44,7 +66,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    return [...STATIC_PAGES, ...articlePages];
+    return [...STATIC_PAGES, ...tagPages, ...articlePages];
   } catch {
     return STATIC_PAGES;
   }

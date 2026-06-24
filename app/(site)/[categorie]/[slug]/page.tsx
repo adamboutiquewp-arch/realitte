@@ -212,12 +212,13 @@ export default async function ArticlePage({ params }: PageProps) {
             {article.tags.length > 0 && (
               <div className="mt-5 flex flex-wrap gap-2">
                 {article.tags.map((tag) => (
-                  <span
+                  <Link
                     key={tag}
-                    className="px-3 py-1 border border-[#E0E0E0] text-[11px] font-medium text-[#424242] tracking-wide"
+                    href={`/tag/${encodeURIComponent(tag)}`}
+                    className="px-3 py-1 border border-[#E0E0E0] text-[11px] font-medium text-[#424242] tracking-wide hover:border-[#E53935] hover:text-[#E53935] transition-colors"
                   >
                     #{tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
             )}
