@@ -7,6 +7,25 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+async function fetchUnsplashImage(query: string): Promise<{ url: string; alt: string } | null> {
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const photo = data.results?.[0];
+    if (!photo) return null;
+    return {
+      url: photo.urls.regular,
+      alt: photo.alt_description || query,
+    };
+  } catch {
+    return null;
+  }
+}
+
 const PROMPT_SYSTEM = `Tu es un journaliste professionnel pour le média Réalitte (France).
 Tu rédiges des articles à partir de sources RSS.
 Règles impératives :
@@ -106,6 +125,10 @@ export async function GET(req: NextRequest) {
 
       const wordCount = parsed.contenu.replace(/<[^>]+>/g, "").split(/\s+/).length;
 
+      // Cherche une image Unsplash basée sur les tags ou le titre
+      const imageQuery = (parsed.tags?.[0] || parsed.titre).slice(0, 50);
+      const image = await fetchUnsplashImage(imageQuery);
+
       await prisma.article.create({
         data: {
           titre: parsed.titre,
@@ -121,6 +144,8 @@ export async function GET(req: NextRequest) {
           metaTitle: parsed.metaTitle || null,
           metaDescription: parsed.metaDescription || null,
           tempsLecture: Math.max(1, Math.ceil(wordCount / 200)),
+          imageUrl: image?.url || null,
+          imageAlt: image?.alt || null,
         },
       });
 
