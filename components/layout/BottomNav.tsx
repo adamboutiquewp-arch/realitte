@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const NAV = [
   { label: "Accueil",    href: "/",          icon: HomeIcon },
@@ -11,8 +12,25 @@ const NAV = [
   { label: "Profil",     href: "/profil",    icon: UserIcon },
 ];
 
+export const PROFIL_KEY = "realitte_profil";
+
 export default function BottomNav() {
   const pathname = usePathname();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // N'affiche la barre que si l'utilisateur a créé son espace
+    const profil = localStorage.getItem(PROFIL_KEY);
+    setVisible(!!profil);
+
+    // Écoute les changements (ex: après création du profil sur la même page)
+    const onStorage = () => setVisible(!!localStorage.getItem(PROFIL_KEY));
+    window.addEventListener("realitte-profil-updated", onStorage);
+    return () => window.removeEventListener("realitte-profil-updated", onStorage);
+  }, []);
+
+  if (!visible) return null;
+
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
