@@ -172,7 +172,7 @@ export async function GET(req: NextRequest) {
       }
 
       // La catégorie de l'article est toujours celle de la source RSS (pas celle devinée par Claude)
-      parsed.categorieSlug = source.categorie;
+      parsed.categorieSlug = source.categorie ?? "actu";
       // Si la source a une sous-catégorie prédéfinie, elle prime sur celle de Claude
       if (sourceSousCategorie) parsed.sousCategorie = sourceSousCategorie;
 
