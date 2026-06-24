@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "Le média de ceux qui veulent comprendre le monde et ceux qui le changent. Actu, Sport, Économie, Politique, Anecdotes, Success Stories.",
 };
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 async function getHomeData() {
   try {

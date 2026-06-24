@@ -38,7 +38,7 @@ export default async function UnePage() {
 
   const allPublished = await prisma.article.findMany({
     where: { statut: "PUBLISHED" },
-    select: { id: true, titre: true, featured: true, categorie: { select: { nom: true, couleur: true } } },
+    select: { id: true, titre: true, featured: true, imageUrl: true, chapo: true, slug: true, categorie: { select: { nom: true, couleur: true } } },
     orderBy: { datePublication: "desc" },
     take: 30,
   });
@@ -82,9 +82,9 @@ export default async function UnePage() {
           articles={allPublished.map((a) => ({
             id: a.id,
             titre: a.titre,
-            imageUrl: null,
-            chapo: "",
-            slug: "",
+            imageUrl: a.imageUrl,
+            chapo: a.chapo,
+            slug: a.slug,
             featuredCategorie: a.featured,
           }))}
           categorieId={null}
