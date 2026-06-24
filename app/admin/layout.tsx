@@ -24,7 +24,7 @@ export default async function AdminLayout({
       <AdminSidebar role={(session.user as { role?: string }).role || "EDITEUR"} />
       <div className="flex-1 flex flex-col min-w-0 ml-0 lg:ml-64">
         <AdminTopBar user={session.user} />
-        <main className="flex-1 p-6 md:p-8">{children}</main>
+        <main className="flex-1 p-6 md:p-8 min-w-0 overflow-x-auto">{children}</main>
       </div>
     </div>
   );
