@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   try {
     const res = await fetch(`${baseUrl}/api/pipeline/${type}`, {
-      headers: { Authorization: `Bearer ${secret}` },
+      headers: { "x-cron-secret": secret },
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Erreur pipeline");
