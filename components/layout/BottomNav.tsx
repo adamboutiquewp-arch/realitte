@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { label: "Accueil",     href: "/",           icon: HomeIcon },
-  { label: "Explorer",    href: "/actu",       icon: ExploreIcon },
-  { label: "Favoris",     href: "/favoris",    icon: HeartIcon },
-  { label: "Newsletter",  href: "/newsletter", icon: MailIcon },
-  { label: "Profil",      href: "/profil",     icon: UserIcon },
+  { label: "Accueil",    href: "/",          icon: HomeIcon },
+  { label: "Explorer",   href: "/explorer",  icon: ExploreIcon },
+  { label: "Favoris",    href: "/favoris",   icon: HeartIcon },
+  { label: "Newsletter", href: "/newsletter",icon: MailIcon },
+  { label: "Profil",     href: "/profil",    icon: UserIcon },
 ];
 
 export default function BottomNav() {
