@@ -14,7 +14,7 @@ const SOUS_CATEGORIES: Record<string, string[]> = {
   economie:        ["Tout", "Finance", "Entreprises", "Marchés", "Emploi"],
   politique:       ["Tout", "France", "International", "Élections", "Social"],
   "success-stories":["Tout", "Entrepreneuriat", "Innovation", "Persévérance", "Sport"],
-  actu:            ["Tout", "France", "Monde", "Société", "Santé"],
+  actu:            ["Tout", "France", "Monde", "Société", "Économie", "People", "Santé & Beauté", "Success Stories", "Fait Divers"],
   people:          ["Tout", "Célébrités", "Royauté", "Cinéma", "Musique", "Télé"],
   "sante-beaute":  ["Tout", "Santé", "Beauté", "Bien-être", "Nutrition", "Forme"],
   "fait-divers":   ["Tout", "Crimes", "Accidents", "Justice", "Disparitions"],

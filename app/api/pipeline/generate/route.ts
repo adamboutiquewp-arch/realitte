@@ -46,7 +46,7 @@ Génère un article complet en JSON avec cette structure exacte :
   "titre": "Titre accrocheur SEO (max 80 chars)",
   "chapo": "Chapô de 2 phrases max, résumé percutant",
   "contenu": "<p>Corps de l'article en HTML...</p>",
-  "categorieSlug": "actu|sport|economie|politique|success-stories|people|sante-beaute|fait-divers",
+  "categorieSlug": "actu|sport|politique",
   "sousCategorie": "Sous-catégorie précise ou null",
   "tags": ["tag1", "tag2", "tag3"],
   "metaTitle": "Meta titre SEO (max 60 chars)",
@@ -158,16 +158,23 @@ export async function GET(req: NextRequest) {
 
       const wordCount = parsed.contenu.replace(/<[^>]+>/g, "").split(/\s+/).length;
 
-      // Récupère l'image source depuis le JSON stocké lors de la collecte
+      // Récupère l'image source et la sous-catégorie depuis le JSON stocké lors de la collecte
       let sourceImageUrl: string | null = null;
       let sourceNom = "RSS";
+      let sourceSousCategorie: string | null = null;
       try {
         const data = JSON.parse(source.contenuBrut);
         sourceImageUrl = data.imageUrl || null;
         sourceNom = data.sourceNom || "RSS";
+        sourceSousCategorie = data.sousCategorie || null;
       } catch {
         // ancien format texte brut — pas d'image source
       }
+
+      // La catégorie de l'article est toujours celle de la source RSS (pas celle devinée par Claude)
+      parsed.categorieSlug = source.categorie;
+      // Si la source a une sous-catégorie prédéfinie, elle prime sur celle de Claude
+      if (sourceSousCategorie) parsed.sousCategorie = sourceSousCategorie;
 
       // Priorité : image du journal source → Unsplash en fallback
       let imageUrl: string | null = sourceImageUrl;
