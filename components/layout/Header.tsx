@@ -196,21 +196,26 @@ export default function Header() {
                   <p className="px-6 pt-4 pb-2 text-[10px] font-black tracking-[0.2em] uppercase text-[#bbb]">
                     {groupe.titre}
                   </p>
-                  {groupe.items.map(({ label, href, couleur }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`flex items-center gap-4 px-6 py-5 text-[20px] font-bold transition-colors ${
-                        isActive(href) ? "text-[#E53935]" : "text-[#111] hover:text-[#E53935]"
-                      }`}
-                    >
-                      <span
-                        className="w-3.5 h-3.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: couleur }}
-                      />
-                      {label}
-                    </Link>
-                  ))}
+                  {groupe.items.map(({ label, href, couleur }) => {
+                    const active = isActive(href);
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        className={`flex items-center gap-4 px-6 py-6 text-[20px] font-bold transition-all border-l-4 ${
+                          active
+                            ? "border-[#E53935] text-[#E53935] bg-[#FFF5F5] pl-5"
+                            : "border-transparent text-[#111] hover:text-[#E53935]"
+                        }`}
+                      >
+                        <span
+                          className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: active ? "#E53935" : couleur }}
+                        />
+                        {label}
+                      </Link>
+                    );
+                  })}
                   <div className="mx-6 border-b border-[#F0F0F0]" />
                 </div>
               ))}
