@@ -3,7 +3,6 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import DeleteArticleButton from "@/components/admin/DeleteArticleButton";
-import FeaturedButton from "@/components/admin/FeaturedButton";
 import FeaturedCategorieButton from "@/components/admin/FeaturedCategorieButton";
 import ToggleArticleButton from "@/components/admin/ToggleArticleButton";
 
@@ -192,9 +191,6 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                             categorieNom={a.categorie.nom}
                             categorieColor={a.categorie.couleur}
                           />
-                        )}
-                        {a.statut === "PUBLISHED" && (
-                          <FeaturedButton id={a.id} featured={a.featured} />
                         )}
                         {a.statut === "PUBLISHED" && (
                           <Link
