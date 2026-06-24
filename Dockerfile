@@ -1,28 +1,25 @@
 FROM node:20-alpine AS base
-
-# Installer les dépendances système
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# ─── Étape 1 : Dépendances ───────────────────────────────────
+# ─── Dépendances ─────────────────────────────────────────────
 FROM base AS deps
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# ─── Étape 2 : Build ─────────────────────────────────────────
+# ─── Build ───────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Générer le client Prisma
+# prisma generate ne nécessite pas DATABASE_URL
 RUN npx prisma generate
 
-# Build Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# ─── Étape 3 : Runner (image finale légère) ──────────────────
+# ─── Runner ──────────────────────────────────────────────────
 FROM base AS runner
 WORKDIR /app
 
@@ -32,10 +29,21 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copier les fichiers nécessaires
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copier Prisma pour le db push au démarrage
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/pg ./node_modules/pg
+COPY --from=builder /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
 
 USER nextjs
 
@@ -43,4 +51,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["./start.sh"]
