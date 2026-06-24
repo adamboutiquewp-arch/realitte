@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
 const NAV_COL1 = [
   { label: "Accueil",   href: "/" },
@@ -13,11 +14,13 @@ const NAV_COL2 = [
   { label: "À propos",      href: "/a-propos" },
 ];
 
-const SOCIAL_LINKS = [
-  { label: "Instagram", href: "https://instagram.com/realitte", icon: InstagramIcon },
-  { label: "LinkedIn",  href: "https://linkedin.com/company/realitte", icon: LinkedInIcon },
-  { label: "X",         href: "https://x.com/realitte", icon: XIcon },
-  { label: "YouTube",   href: "https://youtube.com/@realitte", icon: YouTubeIcon },
+const SOCIAL_DEFAULTS = [
+  { label: "Instagram", cle: "social_instagram", icon: InstagramIcon },
+  { label: "X",         cle: "social_x",         icon: XIcon },
+  { label: "TikTok",    cle: "social_tiktok",    icon: TikTokIcon },
+  { label: "YouTube",   cle: "social_youtube",   icon: YouTubeIcon },
+  { label: "LinkedIn",  cle: "social_linkedin",  icon: LinkedInIcon },
+  { label: "Facebook",  cle: "social_facebook",  icon: FacebookIcon },
 ];
 
 const LEGAL = [
@@ -26,8 +29,17 @@ const LEGAL = [
   { label: "Contact",                  href: "/contact" },
 ];
 
-export default function Footer() {
+export default async function Footer() {
   const year = new Date().getFullYear();
+
+  const configs = await prisma.siteConfig.findMany({
+    where: { cle: { startsWith: "social_" } },
+  });
+  const get = (cle: string) => configs.find((c) => c.cle === cle)?.valeur || "";
+
+  const socialLinks = SOCIAL_DEFAULTS
+    .map(({ label, cle, icon }) => ({ label, href: get(cle), icon }))
+    .filter((s) => s.href);
 
   return (
     <footer className="bg-black text-white mt-auto">
@@ -90,7 +102,7 @@ export default function Footer() {
               Suivez-nous
             </h3>
             <div className="flex items-center gap-4 mb-8">
-              {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
+              {socialLinks.map(({ label, href, icon: Icon }) => (
                 <a
                   key={label}
                   href={href}
@@ -132,6 +144,22 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function TikTokIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/>
+    </svg>
+  );
+}
+
+function FacebookIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
   );
 }
 

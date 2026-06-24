@@ -28,6 +28,14 @@ enum RoleAdmin {
 
 // ─── Models ───────────────────────────────────────────────
 
+model SiteConfig {
+  id     String @id @default(cuid())
+  cle    String @unique
+  valeur String @db.Text
+
+  @@map("site_config")
+}
+
 model Categorie {
   id       String    @id @default(cuid())
   nom      String
