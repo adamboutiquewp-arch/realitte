@@ -1,38 +1,41 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr";
 
-  const [articles, categories] = await Promise.all([
-    prisma.article.findMany({
-      where: { statut: "PUBLISHED" },
-      select: { slug: true, datePublication: true, categorie: { select: { slug: true } } },
-      orderBy: { datePublication: "desc" },
-    }),
-    prisma.categorie.findMany({ select: { slug: true } }),
-  ]);
-
-  const staticPages = [
+  const staticPages: MetadataRoute.Sitemap = [
     { url: siteUrl, lastModified: new Date(), priority: 1.0 },
+    { url: `${siteUrl}/actu`, lastModified: new Date(), priority: 0.8 },
+    { url: `${siteUrl}/sport`, lastModified: new Date(), priority: 0.8 },
+    { url: `${siteUrl}/economie`, lastModified: new Date(), priority: 0.8 },
+    { url: `${siteUrl}/politique`, lastModified: new Date(), priority: 0.8 },
+    { url: `${siteUrl}/anecdote`, lastModified: new Date(), priority: 0.8 },
+    { url: `${siteUrl}/success-stories`, lastModified: new Date(), priority: 0.8 },
     { url: `${siteUrl}/a-propos`, lastModified: new Date(), priority: 0.5 },
     { url: `${siteUrl}/newsletter`, lastModified: new Date(), priority: 0.4 },
     { url: `${siteUrl}/contact`, lastModified: new Date(), priority: 0.3 },
   ];
 
-  const categoryPages = categories.map((cat) => ({
-    url: `${siteUrl}/${cat.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "hourly" as const,
-    priority: 0.8,
-  }));
+  try {
+    const articles = await prisma.article.findMany({
+      where: { statut: "PUBLISHED" },
+      include: { categorie: { select: { slug: true } } },
+      orderBy: { datePublication: "desc" },
+      take: 1000,
+    });
 
-  const articlePages = articles.map((a) => ({
-    url: `${siteUrl}/${a.categorie.slug}/${a.slug}`,
-    lastModified: a.datePublication || new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
+    const articlePages: MetadataRoute.Sitemap = articles.map((a) => ({
+      url: `${siteUrl}/${a.categorie.slug}/${a.slug}`,
+      lastModified: a.datePublication || new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
 
-  return [...staticPages, ...categoryPages, ...articlePages];
+    return [...staticPages, ...articlePages];
+  } catch {
+    return staticPages;
+  }
 }

@@ -6,11 +6,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function createPrismaClient() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
+function createPrismaClient(): PrismaClient {
+  const connectionString =
+    process.env.DATABASE_URL ||
+    "postgresql://placeholder:placeholder@localhost/placeholder";
+
+  const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
+
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
