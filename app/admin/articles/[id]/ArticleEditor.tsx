@@ -63,6 +63,11 @@ export default function ArticleEditor({ article, categories }: Props) {
   const [wikiLoading, setWikiLoading] = useState(false);
   const [wikiMsg, setWikiMsg] = useState("");
 
+  const [ovSearch, setOvSearch] = useState(article.titre);
+  const [ovLoading, setOvLoading] = useState(false);
+  const [ovResults, setOvResults] = useState<{ url: string; thumbnail: string; title: string; creator: string }[]>([]);
+  const [ovMsg, setOvMsg] = useState("");
+
   const searchWikipedia = async () => {
     if (!wikiSearch.trim()) return;
     setWikiLoading(true);
@@ -87,6 +92,28 @@ export default function ArticleEditor({ article, categories }: Props) {
       setWikiMsg("Erreur de connexion.");
     } finally {
       setWikiLoading(false);
+    }
+  };
+
+  const searchOpenverse = async () => {
+    if (!ovSearch.trim()) return;
+    setOvLoading(true);
+    setOvMsg("");
+    setOvResults([]);
+    try {
+      const res = await fetch(
+        `https://api.openverse.org/v1/images/?q=${encodeURIComponent(ovSearch.trim())}&per_page=9&license_type=commercial,modification`
+      );
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (!data.results?.length) { setOvMsg("Aucun résultat."); return; }
+      setOvResults(data.results.map((r: { url: string; thumbnail: string; title: string; creator: string }) => ({
+        url: r.url, thumbnail: r.thumbnail, title: r.title, creator: r.creator,
+      })));
+    } catch {
+      setOvMsg("Erreur de connexion à Openverse.");
+    } finally {
+      setOvLoading(false);
     }
   };
 
@@ -238,6 +265,51 @@ export default function ArticleEditor({ article, categories }: Props) {
                 </p>
               )}
             </div>
+            {/* Recherche Openverse */}
+            <div className="p-3 bg-[#F0F4FF] border border-[#C7D7FF]">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-[#6B7CDD] mb-2">Chercher photo Openverse (libre de droits)</p>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={ovSearch}
+                  onChange={(e) => setOvSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && searchOpenverse()}
+                  placeholder="Mot-clé ou nom..."
+                  className="flex-1 px-3 py-2 border border-[#C7D7FF] text-[12px] outline-none focus:border-[#6B7CDD] bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={searchOpenverse}
+                  disabled={ovLoading}
+                  className="px-3 py-2 bg-[#6B7CDD] text-white text-[11px] font-bold hover:bg-[#E53935] transition-colors disabled:opacity-50"
+                >
+                  {ovLoading ? "…" : "Chercher"}
+                </button>
+              </div>
+              {ovMsg && <p className="text-[11px] text-red-500 mb-1">{ovMsg}</p>}
+              {ovResults.length > 0 && (
+                <div className="grid grid-cols-3 gap-1.5 mt-1">
+                  {ovResults.map((img, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      title={`${img.title} — ${img.creator}`}
+                      onClick={() => {
+                        setForm((f) => ({ ...f, imageUrl: img.url, imageAlt: img.title || ovSearch }));
+                        setOvResults([]);
+                        setOvMsg("✓ Photo sélectionnée !");
+                      }}
+                      className="relative aspect-square overflow-hidden border-2 border-transparent hover:border-[#E53935] transition-all"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.thumbnail} alt={img.title} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              {ovMsg?.startsWith("✓") && <p className="text-[11px] text-green-600 mt-1 font-medium">{ovMsg}</p>}
+            </div>
+
             <Field label="URL image">
               <input type="url" value={form.imageUrl} onChange={update("imageUrl")}
                 className="w-full px-4 py-3 border border-[#E0E0E0] text-[13px] outline-none focus:border-black" />
