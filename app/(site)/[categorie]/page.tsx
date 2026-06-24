@@ -9,11 +9,14 @@ import SubCategoryNav from "./SubCategoryNav";
 import type { ArticleCard as ArticleCardType } from "@/types";
 
 const SOUS_CATEGORIES: Record<string, string[]> = {
-  sport:    ["Tout", "Football", "Basket", "Tennis", "F1", "Rugby"],
-  economie: ["Tout", "Finance", "Entreprises", "Marchés", "Emploi"],
-  politique:["Tout", "France", "International", "Élections", "Social"],
-  "success-stories": ["Tout", "Entrepreneuriat", "Innovation", "Persévérance", "Sport"],
-  actu:     ["Tout", "France", "Monde", "Société", "Santé"],
+  sport:           ["Tout", "Football", "Basket", "Tennis", "F1", "Rugby"],
+  economie:        ["Tout", "Finance", "Entreprises", "Marchés", "Emploi"],
+  politique:       ["Tout", "France", "International", "Élections", "Social"],
+  "success-stories":["Tout", "Entrepreneuriat", "Innovation", "Persévérance", "Sport"],
+  actu:            ["Tout", "France", "Monde", "Société", "Santé"],
+  people:          ["Tout", "Célébrités", "Royauté", "Cinéma", "Musique", "Télé"],
+  "sante-beaute":  ["Tout", "Santé", "Beauté", "Bien-être", "Nutrition", "Forme"],
+  "fait-divers":   ["Tout", "Crimes", "Accidents", "Justice", "Disparitions"],
 };
 
 interface PageProps {
@@ -203,7 +206,10 @@ function getHeroTitle(slug: string): string {
     politique:"La politique décryptée, sans filtre.",
     anecdote: "Les histoires qui font l'humanité.",
     "success-stories": "Ceux qui ont transformé leur vie.",
-    actu:     "L'actualité brute, vérifiée et sourcée.",
+    actu:              "L'actualité brute, vérifiée et sourcée.",
+    people:            "Le monde des célébrités sans détour.",
+    "sante-beaute":    "Prenez soin de vous, chaque jour.",
+    "fait-divers":     "Les faits qui ont marqué l'actualité.",
   };
   return titles[slug] || "Toute l'actualité.";
 }
@@ -215,7 +221,10 @@ function getHeroSubtitle(slug: string): string {
     politique:"Réformes, élections, coulisses du pouvoir : l'analyse qui compte.",
     anecdote: "Ces histoires vraies qui vous surprendront, vous toucheront, vous inspireront.",
     "success-stories": "Des parcours extraordinaires qui prouvent que tout est possible.",
-    actu:     "France, monde, société : l'information vérifiée et sourcée.",
+    actu:              "France, monde, société : l'information vérifiée et sourcée.",
+    people:            "Stars, royauté, cinéma, musique : toute l'actu de vos célébrités préférées.",
+    "sante-beaute":    "Conseils santé, tendances beauté et bien-être pour prendre soin de vous.",
+    "fait-divers":     "Crimes, accidents, justice : les affaires qui ont choqué la France.",
   };
   return subtitles[slug] || "Retrouvez tous nos articles sur ce sujet.";
 }

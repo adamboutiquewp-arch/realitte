@@ -11,6 +11,9 @@ const NAV_ITEMS = [
   { label: "Économie",        href: "/economie" },
   { label: "Politique",       href: "/politique" },
   { label: "Success Stories", href: "/success-stories" },
+  { label: "People",          href: "/people" },
+  { label: "Santé & Beauté",  href: "/sante-beaute" },
+  { label: "Fait Divers",     href: "/fait-divers" },
 ];
 
 const SOCIAL_LINKS = [

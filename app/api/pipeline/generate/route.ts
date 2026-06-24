@@ -46,7 +46,7 @@ Génère un article complet en JSON avec cette structure exacte :
   "titre": "Titre accrocheur SEO (max 80 chars)",
   "chapo": "Chapô de 2 phrases max, résumé percutant",
   "contenu": "<p>Corps de l'article en HTML...</p>",
-  "categorieSlug": "actu|sport|economie|politique|success-stories",
+  "categorieSlug": "actu|sport|economie|politique|success-stories|people|sante-beaute|fait-divers",
   "sousCategorie": "Sous-catégorie précise ou null",
   "tags": ["tag1", "tag2", "tag3"],
   "metaTitle": "Meta titre SEO (max 60 chars)",

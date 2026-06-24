@@ -8,6 +8,9 @@ const CATEGORIES = [
   { slug: "economie",        label: "Économie",        color: "#2E7D32" },
   { slug: "politique",       label: "Politique",       color: "#6A1B9A" },
   { slug: "success-stories", label: "Success Stories", color: "#00838F" },
+  { slug: "people",          label: "People",          color: "#E91E63" },
+  { slug: "sante-beaute",    label: "Santé & Beauté",  color: "#00897B" },
+  { slug: "fait-divers",     label: "Fait Divers",     color: "#455A64" },
 ];
 
 interface PipelineCardProps {

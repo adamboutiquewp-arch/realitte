@@ -18,6 +18,18 @@ const RSS_SOURCES = [
   // Success Stories / Entrepreneuriat
   { url: "https://www.forbes.fr/feed/",                             nom: "Forbes France",      categorie: "success-stories" },
   { url: "https://www.maddyness.com/feed/",                         nom: "Maddyness",          categorie: "success-stories" },
+  // People / Célébrités
+  { url: "https://www.purepeople.com/rss/news_gf-1_l-0_c-0.xml",  nom: "PurePeople",         categorie: "people" },
+  { url: "https://www.gala.fr/rss/actualites.xml",                  nom: "Gala",               categorie: "people" },
+  { url: "https://www.closermag.fr/feed",                           nom: "Closer",             categorie: "people" },
+  // Santé & Beauté
+  { url: "https://www.doctissimo.fr/rss/sante.xml",                 nom: "Doctissimo Santé",   categorie: "sante-beaute" },
+  { url: "https://www.sante-magazine.fr/feed",                      nom: "Santé Magazine",     categorie: "sante-beaute" },
+  { url: "https://www.elle.fr/Beaute/rss.xml",                      nom: "Elle Beauté",        categorie: "sante-beaute" },
+  // Fait Divers
+  { url: "https://www.leparisien.fr/faits-divers/rss.xml",          nom: "Le Parisien FD",    categorie: "fait-divers" },
+  { url: "https://www.20minutes.fr/feeds/rss/faits-divers.xml",     nom: "20 Minutes FD",     categorie: "fait-divers" },
+  { url: "https://www.bfmtv.com/police-justice/rss/",              nom: "BFMTV Police",       categorie: "fait-divers" },
 ];
 
 // Configure le parser pour extraire les images des flux RSS

@@ -9,6 +9,9 @@ const CATEGORIES = [
   { nom: "Économie",       slug: "economie",        couleur: "#2E7D32" },
   { nom: "Politique",      slug: "politique",       couleur: "#6A1B9A" },
   { nom: "Success Stories",slug: "success-stories", couleur: "#00838F" },
+  { nom: "People",         slug: "people",          couleur: "#E91E63" },
+  { nom: "Santé & Beauté", slug: "sante-beaute",    couleur: "#00897B" },
+  { nom: "Fait Divers",    slug: "fait-divers",     couleur: "#455A64" },
 ];
 
 export default function ProfilPage() {

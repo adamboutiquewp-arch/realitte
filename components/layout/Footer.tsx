@@ -10,6 +10,9 @@ const NAV_COL1 = [
 const NAV_COL2 = [
   { label: "Politique",        href: "/politique" },
   { label: "Success Stories",  href: "/success-stories" },
+  { label: "People",           href: "/people" },
+  { label: "Santé & Beauté",   href: "/sante-beaute" },
+  { label: "Fait Divers",      href: "/fait-divers" },
   { label: "À propos",         href: "/a-propos" },
 ];
 
