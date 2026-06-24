@@ -54,11 +54,18 @@ Règles impératives :
 - Formate le contenu en HTML simple (balises p, h2, h3, blockquote uniquement)
 - Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks`;
 
-const PROMPT_USER = (source: { titreOriginal: string; contenuBrut: string; url: string }) => `
-Source URL: ${source.url}
+const PROMPT_USER = (source: { titreOriginal: string; contenuBrut: string; url: string }, categorieSource?: string | null) => {
+  const isCreateurs = categorieSource === "createurs";
+  const categorieInstruction = isCreateurs
+    ? `IMPORTANT : Cette source provient de la catégorie CRÉATEURS DE CONTENU.
+- Si l'article ne parle PAS d'un créateur de contenu (YouTubeur, TikTokeur, streamer, podcasteur, influenceur, personnalité des réseaux sociaux), réponds avec : {"skip": true}
+- Si l'article parle bien d'un créateur, rédige-le en mettant en avant son parcours, sa communauté, son impact numérique.`
+    : "";
+
+  return `Source URL: ${source.url}
 Titre original: ${source.titreOriginal}
 Contenu brut: ${source.contenuBrut.slice(0, 3000)}
-
+${categorieInstruction}
 Génère un article complet en JSON avec cette structure exacte :
 {
   "titre": "Titre accrocheur SEO (max 80 chars)",
@@ -70,7 +77,7 @@ Génère un article complet en JSON avec cette structure exacte :
   "tags": ["tag1", "tag2", "tag3"],
   "metaTitle": "Meta titre SEO (max 60 chars)",
   "metaDescription": "Meta description (max 155 chars)"
-}`;
+}`;};
 
 export async function GET(req: NextRequest) {
   const cronSecret = req.headers.get("x-cron-secret");
@@ -132,7 +139,7 @@ export async function GET(req: NextRequest) {
         messages: [
           {
             role: "user",
-            content: PROMPT_USER(source),
+            content: PROMPT_USER(source, source.categorie),
           },
         ],
         system: PROMPT_SYSTEM,
@@ -141,6 +148,7 @@ export async function GET(req: NextRequest) {
       const rawText = response.content[0].type === "text" ? response.content[0].text : "";
 
       let parsed: {
+        skip?: boolean;
         titre: string;
         chapo: string;
         contenu: string;
@@ -158,6 +166,15 @@ export async function GET(req: NextRequest) {
         const match = rawText.match(/\{[\s\S]*\}/);
         if (!match) throw new Error("JSON invalide dans la réponse Claude");
         parsed = JSON.parse(match[0]);
+      }
+
+      // Article hors-sujet pour la catégorie créateurs → on ignore
+      if (parsed.skip) {
+        await prisma.sourceBrute.update({
+          where: { id: source.id },
+          data: { traite: true },
+        });
+        continue;
       }
 
       let categorie = await prisma.categorie.findUnique({
