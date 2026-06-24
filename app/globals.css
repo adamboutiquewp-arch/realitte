@@ -1,26 +1,209 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── Design Tokens ─────────────────────────────────────── */
+@theme {
+  /* Couleurs */
+  --color-black:        #000000;
+  --color-noir:         #111111;
+  --color-blanc:        #ffffff;
+  --color-rouge:        #E53935;
+  --color-rouge-dark:   #C62828;
+  --color-dore:         #C9A84C;
+  --color-dore-light:   #F0C96B;
+  --color-gris-clair:   #F5F5F5;
+  --color-gris:         #9E9E9E;
+  --color-gris-dark:    #424242;
+  --color-bordure:      #E0E0E0;
+
+  /* Couleurs par catégorie */
+  --color-sport:        #E53935;
+  --color-economie:     #1565C0;
+  --color-politique:    #212121;
+  --color-anecdote:     #C9A84C;
+  --color-success:      #C9A84C;
+  --color-actu:         #E53935;
+
+  /* Typographies */
+  --font-serif:         var(--font-playfair), 'Georgia', serif;
+  --font-sans:          var(--font-inter), 'Helvetica Neue', Arial, sans-serif;
+
+  /* Espacements custom */
+  --spacing-header:     60px;
+  --spacing-header-sm:  56px;
+
+  /* Animations */
+  --ease-smooth:        cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─── Reset & Base ───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: #111111;
+  font-family: var(--font-inter), 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Typographie ────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-inter), 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.font-serif {
+  font-family: var(--font-playfair), 'Georgia', serif;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #9E9E9E; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #757575; }
+
+/* ─── Utility classes ────────────────────────────────────── */
+.container-site {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+  .container-site {
+    padding: 0 16px;
+  }
+}
+
+/* ─── Tags catégories ────────────────────────────────────── */
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  line-height: 1.4;
+}
+
+.tag-sport     { color: #E53935; }
+.tag-economie  { color: #1565C0; }
+.tag-politique { color: #212121; }
+.tag-anecdote  { color: #C9A84C; }
+.tag-success   { color: #C9A84C; }
+.tag-actu      { color: #E53935; }
+
+/* ─── Lire l'article link ───────────────────────────────── */
+.read-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #111111;
+  text-decoration: none;
+  transition: color 0.2s var(--ease-smooth);
+}
+.read-link:hover { color: #E53935; }
+.read-link::after { content: '→'; }
+
+/* ─── Hero overlay gradient ─────────────────────────────── */
+.hero-overlay {
+  background: linear-gradient(
+    to right,
+    rgba(0,0,0,0.85) 0%,
+    rgba(0,0,0,0.55) 50%,
+    rgba(0,0,0,0.15) 100%
+  );
+}
+
+/* ─── Separateur fin ─────────────────────────────────────── */
+.separator {
+  border: none;
+  border-top: 1px solid #E0E0E0;
+}
+
+/* ─── Line clamp utilities ───────────────────────────────── */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Prose article ──────────────────────────────────────── */
+.prose-realitte {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #1a1a1a;
+}
+.prose-realitte p { margin-bottom: 1.5em; }
+.prose-realitte h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 2em 0 0.75em;
+  color: #111;
+}
+.prose-realitte h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 1.5em 0 0.5em;
+}
+.prose-realitte blockquote {
+  border-left: 4px solid #C9A84C;
+  padding-left: 20px;
+  margin: 2em 0;
+  font-style: italic;
+  color: #424242;
+  font-size: 18px;
+}
+.prose-realitte a {
+  color: #E53935;
+  text-decoration: underline;
+}
+.prose-realitte strong { font-weight: 700; }
+
+/* ─── Bottom nav mobile ──────────────────────────────────── */
+.bottom-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─── Skeleton loader ────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* ─── Focus visible ──────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #E53935;
+  outline-offset: 2px;
 }
