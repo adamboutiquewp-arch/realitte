@@ -32,9 +32,14 @@ const LEGAL = [
 export default async function Footer() {
   const year = new Date().getFullYear();
 
-  const configs = await prisma.siteConfig.findMany({
-    where: { cle: { startsWith: "social_" } },
-  });
+  let configs: { cle: string; valeur: string }[] = [];
+  try {
+    configs = await prisma.siteConfig.findMany({
+      where: { cle: { startsWith: "social_" } },
+    });
+  } catch {
+    // Table pas encore créée (prisma db push non lancé)
+  }
   const get = (cle: string) => configs.find((c) => c.cle === cle)?.valeur || "";
 
   const socialLinks = SOCIAL_DEFAULTS
