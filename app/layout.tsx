@@ -14,7 +14,7 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr";
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr").replace(/\/$/, "");
 
 export const metadata: Metadata = {
   title: {
