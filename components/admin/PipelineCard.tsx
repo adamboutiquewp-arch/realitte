@@ -3,14 +3,10 @@
 import { useState } from "react";
 
 const CATEGORIES = [
-  { slug: "actu",            label: "Actu",            color: "#E53935" },
-  { slug: "sport",           label: "Sport",           color: "#1565C0" },
-  { slug: "economie",        label: "Économie",        color: "#2E7D32" },
-  { slug: "politique",       label: "Politique",       color: "#6A1B9A" },
-  { slug: "success-stories", label: "Success Stories", color: "#00838F" },
-  { slug: "people",          label: "People",          color: "#E91E63" },
-  { slug: "sante-beaute",    label: "Santé & Beauté",  color: "#00897B" },
-  { slug: "fait-divers",     label: "Fait Divers",     color: "#455A64" },
+  { slug: "actu",      label: "Actu",      color: "#E53935" },
+  { slug: "sport",     label: "Sport",     color: "#1565C0" },
+  { slug: "politique", label: "Politique", color: "#6A1B9A" },
+  { slug: "createurs", label: "Créateurs", color: "#7C3AED" },
 ];
 
 interface PipelineCardProps {
