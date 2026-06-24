@@ -4,11 +4,13 @@ import { useState } from "react";
 
 export default function FeaturedCategorieButton({
   id,
+  categorieId,
   featuredCategorie,
   categorieNom,
   categorieColor,
 }: {
   id: string;
+  categorieId: string;
   featuredCategorie: boolean;
   categorieNom: string;
   categorieColor: string;
@@ -20,10 +22,10 @@ export default function FeaturedCategorieButton({
     if (loading) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/articles/${id}`, {
-        method: "PATCH",
+      const res = await fetch(`/api/admin/articles/${id}/feature-categorie`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ featuredCategorie: !active }),
+        body: JSON.stringify({ categorieId, active: !active }),
       });
       if (res.ok) {
         setActive((v) => !v);
@@ -38,7 +40,7 @@ export default function FeaturedCategorieButton({
     <button
       onClick={toggle}
       disabled={loading}
-      title={active ? `Retirer de la une ${categorieNom}` : `Une de ${categorieNom}`}
+      title={active ? `Retirer de la une ${categorieNom}` : `Mettre en une de ${categorieNom}`}
       className="flex items-center gap-1 px-2.5 py-1.5 rounded text-[11px] font-bold transition-all disabled:opacity-50"
       style={
         active

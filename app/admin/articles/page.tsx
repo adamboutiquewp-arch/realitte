@@ -49,7 +49,6 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
     prisma.article.findMany({
       where,
       include: { categorie: { select: { nom: true, couleur: true, slug: true } } },
-
       orderBy: { dateCreation: "desc" },
       take: perPage,
       skip,
@@ -184,6 +183,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                         {a.statut === "PUBLISHED" && (
                           <FeaturedCategorieButton
                             id={a.id}
+                            categorieId={a.categorieId}
                             featuredCategorie={a.featuredCategorie}
                             categorieNom={a.categorie.nom}
                             categorieColor={a.categorie.couleur}
