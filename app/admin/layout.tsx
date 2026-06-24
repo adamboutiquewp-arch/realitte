@@ -1,5 +1,4 @@
 import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopBar from "@/components/admin/AdminTopBar";
 
@@ -15,16 +14,14 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
+  // La page login n'utilise pas ce layout (pas de sidebar/topbar)
   if (!session?.user) {
-    redirect("/admin/login");
+    return <>{children}</>;
   }
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex">
-      {/* Sidebar */}
       <AdminSidebar role={(session.user as { role?: string }).role || "EDITEUR"} />
-
-      {/* Contenu principal */}
       <div className="flex-1 flex flex-col min-w-0 ml-0 lg:ml-64">
         <AdminTopBar user={session.user} />
         <main className="flex-1 p-6 md:p-8">{children}</main>
