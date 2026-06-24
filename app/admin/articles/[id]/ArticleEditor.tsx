@@ -59,6 +59,36 @@ export default function ArticleEditor({ article, categories }: Props) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] = useState<"contenu" | "seo" | "apercu">("contenu");
+  const [wikiSearch, setWikiSearch] = useState(article.titre);
+  const [wikiLoading, setWikiLoading] = useState(false);
+  const [wikiMsg, setWikiMsg] = useState("");
+
+  const searchWikipedia = async () => {
+    if (!wikiSearch.trim()) return;
+    setWikiLoading(true);
+    setWikiMsg("");
+    try {
+      const tryLang = async (lang: string) => {
+        const res = await fetch(
+          `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiSearch.trim())}`
+        );
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.originalimage?.source || data.thumbnail?.source || null;
+      };
+      const url = (await tryLang("fr")) ?? (await tryLang("en"));
+      if (url) {
+        setForm((f) => ({ ...f, imageUrl: url, imageAlt: wikiSearch.trim() }));
+        setWikiMsg("✓ Photo trouvée !");
+      } else {
+        setWikiMsg("Aucune photo trouvée sur Wikipedia.");
+      }
+    } catch {
+      setWikiMsg("Erreur de connexion.");
+    } finally {
+      setWikiLoading(false);
+    }
+  };
 
   const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm((f) => ({ ...f, [field]: e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value }));
@@ -181,6 +211,33 @@ export default function ArticleEditor({ article, categories }: Props) {
                 placeholder="PSG, Football, Ligue des Champions"
                 className="w-full px-4 py-3 border border-[#E0E0E0] text-[13px] outline-none focus:border-black" />
             </Field>
+            {/* Recherche Wikipedia */}
+            <div className="p-3 bg-[#F9F9F9] border border-[#E0E0E0]">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-[#999] mb-2">Chercher photo Wikipedia</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={wikiSearch}
+                  onChange={(e) => setWikiSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && searchWikipedia()}
+                  placeholder="Nom de la personnalité..."
+                  className="flex-1 px-3 py-2 border border-[#E0E0E0] text-[12px] outline-none focus:border-black"
+                />
+                <button
+                  type="button"
+                  onClick={searchWikipedia}
+                  disabled={wikiLoading}
+                  className="px-3 py-2 bg-[#111] text-white text-[11px] font-bold hover:bg-[#E53935] transition-colors disabled:opacity-50"
+                >
+                  {wikiLoading ? "…" : "Chercher"}
+                </button>
+              </div>
+              {wikiMsg && (
+                <p className={`text-[11px] mt-1.5 font-medium ${wikiMsg.startsWith("✓") ? "text-green-600" : "text-red-500"}`}>
+                  {wikiMsg}
+                </p>
+              )}
+            </div>
             <Field label="URL image">
               <input type="url" value={form.imageUrl} onChange={update("imageUrl")}
                 className="w-full px-4 py-3 border border-[#E0E0E0] text-[13px] outline-none focus:border-black" />
