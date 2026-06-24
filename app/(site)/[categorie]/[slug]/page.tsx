@@ -13,22 +13,41 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, categorie: catSlug } = await params;
   const article = await prisma.article.findUnique({
     where: { slug },
     include: { categorie: true },
   });
   if (!article) return { title: "Article introuvable" };
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr";
+  const articleUrl = `${siteUrl}/${catSlug}/${slug}`;
+  const ogImage = article.imageUrl
+    ? [{ url: article.imageUrl, alt: article.imageAlt || article.titre, width: 1200, height: 630 }]
+    : [];
+
   return {
     title: article.metaTitle || article.titre,
     description: article.metaDescription || article.chapo,
+    alternates: { canonical: articleUrl },
     openGraph: {
-      title: article.titre,
-      description: article.chapo,
-      images: article.imageUrl ? [{ url: article.imageUrl, alt: article.imageAlt || article.titre }] : [],
+      title: article.metaTitle || article.titre,
+      description: article.metaDescription || article.chapo,
+      url: articleUrl,
+      images: ogImage,
       type: "article",
       publishedTime: article.datePublication?.toISOString(),
+      modifiedTime: article.dateCreation.toISOString(),
+      section: article.categorie.nom,
+      authors: [`${siteUrl}/a-propos`],
+      locale: "fr_FR",
+      siteName: "Réalitte",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.metaTitle || article.titre,
+      description: article.metaDescription || article.chapo,
+      images: article.imageUrl ? [article.imageUrl] : [],
     },
   };
 }

@@ -14,28 +14,78 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr";
+
 export const metadata: Metadata = {
   title: {
     default: "Réalitte — Le vrai. Le brut. Le mérité.",
     template: "%s | Réalitte",
   },
   description:
-    "Réalitte, le média de ceux qui veulent comprendre le monde et ceux qui le changent. Actu, Sport, Économie, Politique, Anecdotes, Success Stories.",
-  keywords: ["actualité", "news", "sport", "économie", "politique", "france"],
-  authors: [{ name: "Réalitte" }],
+    "Réalitte, le média de ceux qui veulent comprendre le monde et ceux qui le changent. Actu, Sport, Économie, Politique, Créateurs, Entrepreneurs.",
+  keywords: [
+    "actualité", "actu", "news", "sport", "économie", "politique",
+    "créateurs de contenu", "entrepreneurs", "france", "réalitte",
+  ],
+  authors: [{ name: "Réalitte", url: SITE_URL }],
   creator: "Réalitte",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.fr"
-  ),
+  publisher: "Réalitte",
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: SITE_URL },
   openGraph: {
     type: "website",
     locale: "fr_FR",
     siteName: "Réalitte",
+    url: SITE_URL,
+    title: "Réalitte — Le vrai. Le brut. Le mérité.",
+    description:
+      "Le média de ceux qui veulent comprendre le monde et ceux qui le changent.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@realitte",
+    creator: "@realitte",
+    title: "Réalitte — Le vrai. Le brut. Le mérité.",
+    description:
+      "Le média de ceux qui veulent comprendre le monde et ceux qui le changent.",
+  },
+  verification: {
+    google: "6ad3e2e6f14b2426",
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "NewsMediaOrganization",
+  name: "Réalitte",
+  url: SITE_URL,
+  logo: {
+    "@type": "ImageObject",
+    url: `${SITE_URL}/logo.png`,
+    width: 200,
+    height: 60,
+  },
+  sameAs: [
+    "https://instagram.com/realitte",
+    "https://x.com/realitte",
+    "https://linkedin.com/company/realitte",
+    "https://youtube.com/@realitte",
+  ],
+  description:
+    "Réalitte est un média français d'actualité couvrant l'actu, le sport, la politique, les créateurs de contenu et les entrepreneurs.",
+  foundingDate: "2024",
+  inLanguage: "fr",
 };
 
 export default function RootLayout({
@@ -49,6 +99,12 @@ export default function RootLayout({
       className={`${inter.variable} ${playfair.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-white text-[#111111] antialiased">
         {children}
       </body>
