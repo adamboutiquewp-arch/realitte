@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ArticleCard from "@/components/article/ArticleCard";
 import EspacePartenaire from "@/components/home/EspacePartenaire";
