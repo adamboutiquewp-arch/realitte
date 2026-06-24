@@ -7,6 +7,23 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+async function fetchWikipediaImage(nom: string): Promise<{ url: string; alt: string } | null> {
+  const tryWiki = async (lang: string) => {
+    try {
+      const res = await fetch(
+        `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(nom)}`,
+        { headers: { "User-Agent": "Realitte/1.0 (contact@realitte.com)" } }
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      const url = data.originalimage?.source || data.thumbnail?.source;
+      if (!url) return null;
+      return { url, alt: nom };
+    } catch { return null; }
+  };
+  return (await tryWiki("fr")) ?? (await tryWiki("en"));
+}
+
 async function fetchUnsplashImage(query: string): Promise<{ url: string; alt: string } | null> {
   try {
     const res = await fetch(
@@ -49,6 +66,7 @@ Génère un article complet en JSON avec cette structure exacte :
   "contenu": "<p>Corps de l'article en HTML...</p>",
   "categorieSlug": "actu|sport|politique|createurs",
   "sousCategorie": "Sous-catégorie précise ou null",
+  "personnageNom": "Prénom Nom de la personnalité principale si l'article parle d'une personne réelle, sinon null",
   "tags": ["tag1", "tag2", "tag3"],
   "metaTitle": "Meta titre SEO (max 60 chars)",
   "metaDescription": "Meta description (max 155 chars)"
@@ -128,6 +146,7 @@ export async function GET(req: NextRequest) {
         contenu: string;
         categorieSlug: string;
         sousCategorie: string | null;
+        personnageNom: string | null;
         tags: string[];
         metaTitle: string;
         metaDescription: string;
@@ -177,9 +196,14 @@ export async function GET(req: NextRequest) {
       // Si la source a une sous-catégorie prédéfinie, elle prime sur celle de Claude
       if (sourceSousCategorie) parsed.sousCategorie = sourceSousCategorie;
 
-      // Priorité : image du journal source → Unsplash en fallback
+      // Priorité : 1) image RSS source → 2) Wikipedia si personnalité → 3) Unsplash
       let imageUrl: string | null = sourceImageUrl;
       let imageAlt: string | null = parsed.titre;
+      if (!imageUrl && parsed.personnageNom) {
+        const wiki = await fetchWikipediaImage(parsed.personnageNom);
+        imageUrl = wiki?.url || null;
+        imageAlt = wiki ? parsed.personnageNom : parsed.titre;
+      }
       if (!imageUrl) {
         const imageQuery = (parsed.tags?.[0] || parsed.titre).slice(0, 50);
         const unsplash = await fetchUnsplashImage(imageQuery);
