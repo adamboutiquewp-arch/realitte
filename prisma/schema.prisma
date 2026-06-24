@@ -138,6 +138,24 @@ model EspacePartenaire {
   @@map("espace_partenaire")
 }
 
+model EntrepreneurSemaine {
+  id                   String   @id @default(cuid())
+  entrepreneurNom      String
+  entrepreneurTitre    String
+  entrepreneurBio      String   @db.Text
+  entrepreneurCitation String   @db.Text
+  entrepreneurPhoto    String?
+  entrepriseNom        String
+  entrepriseDescription String  @db.Text
+  entrepriseLogo       String?
+  entrepriseSite       String?
+  semaineDu            DateTime
+  actif                Boolean  @default(true)
+  dateCreation         DateTime @default(now())
+
+  @@map("entrepreneur_semaine")
+}
+
 model PipelineLog {
   id          String   @id @default(cuid())
   type        String   // collect | generate | error

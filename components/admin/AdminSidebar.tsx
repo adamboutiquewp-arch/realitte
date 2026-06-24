@@ -36,7 +36,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Monétisation",
     items: [
-      { label: "Publicité",       href: "/admin/pub",          icon: IconAd },
+      { label: "Publicité",           href: "/admin/pub",            icon: IconAd },
+      { label: "Entrepreneurs",       href: "/admin/entrepreneurs",  icon: IconEntrepreneur },
     ],
   },
   {
@@ -216,6 +217,16 @@ function IconUsers({ className = "" }: { className?: string }) {
       <circle cx="9" cy="7" r="4"/>
       <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
       <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  );
+}
+
+function IconEntrepreneur({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      <path d="M16 3.5c1.5.5 2.5 2 2.5 3.5"/>
     </svg>
   );
 }

@@ -7,6 +7,7 @@ import EspacePartenaire from "@/components/home/EspacePartenaire";
 import SuccessStories from "@/components/home/SuccessStories";
 import Newsletter from "@/components/home/Newsletter";
 import ValuesBar from "@/components/home/ValuesBar";
+import EntrepreneurSemaineSection from "@/components/home/EntrepreneurSemaine";
 import Link from "next/link";
 import type { ArticleCard, DerniereInfo } from "@/types";
 
@@ -20,7 +21,7 @@ export const dynamic = "force-dynamic";
 
 async function getHomeData() {
   try {
-    const [heroArticle, dernieresInfos, alaUne, successStories] =
+    const [heroArticle, dernieresInfos, alaUne, successStories, entrepreneurSemaine] =
       await Promise.all([
         prisma.article.findFirst({
           where: { statut: "PUBLISHED" },
@@ -52,11 +53,16 @@ async function getHomeData() {
           orderBy: { datePublication: "desc" },
           take: 3,
         }),
+
+        prisma.entrepreneurSemaine.findFirst({
+          where: { actif: true },
+          orderBy: { semaineDu: "desc" },
+        }),
       ]);
 
-    return { heroArticle, dernieresInfos, alaUne, successStories };
+    return { heroArticle, dernieresInfos, alaUne, successStories, entrepreneurSemaine };
   } catch {
-    return { heroArticle: null, dernieresInfos: [], alaUne: [], successStories: [] };
+    return { heroArticle: null, dernieresInfos: [], alaUne: [], successStories: [], entrepreneurSemaine: null };
   }
 }
 
@@ -95,7 +101,7 @@ function mapToCard(a: {
 }
 
 export default async function HomePage() {
-  const { heroArticle, dernieresInfos, alaUne, successStories } =
+  const { heroArticle, dernieresInfos, alaUne, successStories, entrepreneurSemaine } =
     await getHomeData();
 
   const mappedHero: ArticleCard | null = heroArticle ? mapToCard(heroArticle) : null;
@@ -138,6 +144,12 @@ export default async function HomePage() {
       <div className="container-site">
         <AlaUneGrid articles={alaUne.map(mapToCard)} />
         <hr className="separator my-4" />
+        {entrepreneurSemaine && (
+          <>
+            <EntrepreneurSemaineSection entrepreneur={entrepreneurSemaine} />
+            <hr className="separator my-4" />
+          </>
+        )}
         <EspacePartenaire />
         <hr className="separator my-4" />
 
