@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import DeleteCategorieButton from "@/components/admin/DeleteCategorieButton";
 
 export const metadata: Metadata = { title: "Catégories" };
 export const dynamic = "force-dynamic";
@@ -127,18 +128,11 @@ export default async function CategoriesPage({ searchParams }: PageProps) {
                   <td className="px-4 py-4 text-center text-[#999]">{cat.ordre}</td>
                   <td className="px-4 py-4 text-right">
                     {cat._count.articles === 0 && (
-                      <form action={deleteCategorie}>
-                        <input type="hidden" name="id" value={cat.id} />
-                        <button
-                          type="submit"
-                          className="text-[12px] text-[#bbb] hover:text-[#E53935] font-medium transition-colors"
-                          onClick={(e) => {
-                            if (!confirm(`Supprimer "${cat.nom}" ?`)) e.preventDefault();
-                          }}
-                        >
-                          Supprimer
-                        </button>
-                      </form>
+                      <DeleteCategorieButton
+                        id={cat.id}
+                        nom={cat.nom}
+                        action={deleteCategorie}
+                      />
                     )}
                   </td>
                 </tr>
