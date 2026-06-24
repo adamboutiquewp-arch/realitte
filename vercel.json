@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/pipeline/collect",
-      "schedule": "0 6,12,18 * * *"
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/pipeline/generate",
-      "schedule": "30 6,12,18 * * *"
+      "schedule": "30 9 * * *"
     }
   ]
 }
