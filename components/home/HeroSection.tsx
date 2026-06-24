@@ -12,8 +12,7 @@ export default function HeroSection({ article }: HeroSectionProps) {
   const href = `/${article.categorie.slug}/${article.slug}`;
 
   return (
-    <section className="relative bg-black overflow-hidden" style={{ minHeight: 420 }}>
-      {/* Image de fond */}
+    <section className="relative bg-black overflow-hidden min-h-[460px] md:min-h-[540px]">
       {article.imageUrl && (
         <div className="absolute inset-0">
           <Image
@@ -22,38 +21,32 @@ export default function HeroSection({ article }: HeroSectionProps) {
             fill
             priority
             className="object-cover object-center opacity-50"
-            sizes="100vw"
+            sizes="(max-width: 1024px) 100vw, 70vw"
           />
         </div>
       )}
-
-      {/* Gradient */}
       <div className="absolute inset-0 hero-overlay" />
 
-      {/* Contenu */}
-      <div className="container-site relative z-10 py-16 md:py-20 flex flex-col justify-end min-h-[420px] md:min-h-[500px]">
-        <div className="max-w-lg">
-          {/* Tag À LA UNE */}
+      <div className="relative z-10 flex flex-col justify-end min-h-[460px] md:min-h-[540px] px-8 md:px-10 py-12 md:py-16">
+        <div className="max-w-[460px]">
           <div className="inline-flex items-center px-3 py-1.5 bg-[#C9A84C] mb-5">
-            <span className="text-[11px] font-bold tracking-widest uppercase text-black">
+            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-black">
               À la une
             </span>
           </div>
 
-          {/* Titre */}
-          <h1 className="text-white text-4xl md:text-5xl font-black leading-[1.05] tracking-tight mb-4">
+          <h1 className="text-white font-black leading-[1.0] tracking-tight mb-5"
+              style={{ fontSize: "clamp(32px, 4vw, 52px)" }}>
             {article.titre}
           </h1>
 
-          {/* Chapô */}
-          <p className="text-white/80 text-base md:text-lg leading-relaxed mb-8 line-clamp-2">
+          <p className="text-white/70 text-[15px] leading-relaxed mb-8 line-clamp-2">
             {article.chapo}
           </p>
 
-          {/* CTA */}
           <Link
             href={href}
-            className="inline-flex items-center gap-3 px-8 py-3.5 bg-white text-black text-[13px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors duration-200"
+            className="inline-flex items-center px-8 py-3.5 bg-white text-black text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors duration-200"
           >
             Lire l&apos;article
           </Link>
@@ -65,20 +58,29 @@ export default function HeroSection({ article }: HeroSectionProps) {
 
 function HeroPlaceholder() {
   return (
-    <section className="bg-black" style={{ minHeight: 500 }}>
-      <div className="container-site py-20 flex flex-col justify-end min-h-[500px]">
-        <div className="max-w-lg">
+    <section className="relative bg-[#0a0a0a] overflow-hidden min-h-[460px] md:min-h-[540px]">
+      <div className="absolute inset-0 hero-overlay" />
+
+      <div className="relative z-10 flex flex-col justify-end min-h-[460px] md:min-h-[540px] px-8 md:px-10 py-12 md:py-16">
+        <div className="max-w-[460px]">
           <div className="inline-flex items-center px-3 py-1.5 bg-[#C9A84C] mb-5">
-            <span className="text-[11px] font-bold tracking-widest uppercase text-black">À la une</span>
+            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-black">
+              À la une
+            </span>
           </div>
-          <h1 className="text-white text-5xl font-black leading-tight mb-6">
-            DISCIPLINE.<br />TRAVAIL.<br />
+
+          <h1 className="text-white font-black leading-[1.0] tracking-tight mb-5"
+              style={{ fontSize: "clamp(36px, 4.5vw, 58px)" }}>
+            DISCIPLINE.<br />
+            TRAVAIL.<br />
             <span className="text-[#C9A84C]">RÉALITTE.</span>
           </h1>
-          <p className="text-white/70 text-lg mb-8">
+
+          <p className="text-white/65 text-[15px] leading-relaxed mb-8">
             Dans les coulisses de ceux qui réussissent sans tricher.
           </p>
-          <span className="inline-flex items-center gap-3 px-8 py-3.5 border-2 border-white text-white text-[13px] font-bold tracking-widest uppercase">
+
+          <span className="inline-flex items-center px-8 py-3.5 bg-white text-black text-[12px] font-bold tracking-widest uppercase">
             Lire l&apos;article
           </span>
         </div>

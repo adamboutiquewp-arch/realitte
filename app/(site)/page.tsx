@@ -116,12 +116,12 @@ export default async function HomePage() {
       {/* Hero + Dernières infos */}
       <div className="bg-black">
         <div className="container-site">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-0">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-0">
             <div className="lg:border-r lg:border-white/10">
               <HeroSection article={mappedHero} />
             </div>
-            <div className="hidden lg:block bg-black py-10 px-8">
-              <DernieresInfos articles={mappedDernieres} />
+            <div className="hidden lg:flex flex-col justify-center py-10 px-8">
+              <DernieresInfos articles={mappedDernieres} dark />
             </div>
           </div>
         </div>
