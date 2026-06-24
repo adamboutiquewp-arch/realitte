@@ -1,19 +1,14 @@
 import Link from "next/link";
 
 const NAV_COL1 = [
-  { label: "Accueil",    href: "/" },
-  { label: "Actu",       href: "/actu" },
-  { label: "Sport",      href: "/sport" },
-  { label: "Économie",   href: "/economie" },
+  { label: "Accueil",   href: "/" },
+  { label: "Actu",      href: "/actu" },
+  { label: "Sport",     href: "/sport" },
+  { label: "Politique", href: "/politique" },
 ];
 
 const NAV_COL2 = [
-  { label: "Politique",        href: "/politique" },
-  { label: "Success Stories",  href: "/success-stories" },
-  { label: "People",           href: "/people" },
-  { label: "Santé & Beauté",   href: "/sante-beaute" },
-  { label: "Fait Divers",      href: "/fait-divers" },
-  { label: "À propos",         href: "/a-propos" },
+  { label: "À propos", href: "/a-propos" },
 ];
 
 const SOCIAL_LINKS = [

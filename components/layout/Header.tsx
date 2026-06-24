@@ -6,33 +6,18 @@ import { useState, useEffect } from "react";
 import SearchModal from "./SearchModal";
 
 const NAV_ITEMS = [
-  { label: "Actu",            href: "/actu",            couleur: "#E53935" },
-  { label: "Sport",           href: "/sport",           couleur: "#1565C0" },
-  { label: "Économie",        href: "/economie",        couleur: "#2E7D32" },
-  { label: "Politique",       href: "/politique",       couleur: "#6A1B9A" },
-  { label: "People",          href: "/people",          couleur: "#E91E63" },
-  { label: "Santé & Beauté",  href: "/sante-beaute",   couleur: "#00897B" },
-  { label: "Fait Divers",     href: "/fait-divers",    couleur: "#455A64" },
-  { label: "Success Stories", href: "/success-stories", couleur: "#00838F" },
+  { label: "Actu",      href: "/actu",      couleur: "#E53935" },
+  { label: "Sport",     href: "/sport",     couleur: "#1565C0" },
+  { label: "Politique", href: "/politique", couleur: "#6A1B9A" },
 ];
 
 const NAV_GROUPES = [
   {
-    titre: "Actualités",
+    titre: "Rubriques",
     items: [
       { label: "Actu",      href: "/actu",      couleur: "#E53935" },
       { label: "Sport",     href: "/sport",     couleur: "#1565C0" },
-      { label: "Économie",  href: "/economie",  couleur: "#2E7D32" },
       { label: "Politique", href: "/politique", couleur: "#6A1B9A" },
-      { label: "Fait Divers", href: "/fait-divers", couleur: "#455A64" },
-    ],
-  },
-  {
-    titre: "Lifestyle",
-    items: [
-      { label: "People",          href: "/people",          couleur: "#E91E63" },
-      { label: "Santé & Beauté",  href: "/sante-beaute",   couleur: "#00897B" },
-      { label: "Success Stories", href: "/success-stories", couleur: "#00838F" },
     ],
   },
 ];
