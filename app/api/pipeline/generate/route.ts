@@ -59,20 +59,44 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  // Filtre par catégories si spécifiées (?categories=sport,politique)
-  const catsParam = req.nextUrl.searchParams.get("categories");
+  // categoryConfig = { sport: 3, politique: 2, ... } — nombre d'articles par catégorie
+  const configParam = req.nextUrl.searchParams.get("categoryConfig");
+  const catsParam    = req.nextUrl.searchParams.get("categories");
+
+  let categoryConfig: Record<string, number> | null = null;
+  try {
+    if (configParam) categoryConfig = JSON.parse(configParam);
+  } catch { /* ignore */ }
+
   const selectedCats = catsParam ? catsParam.split(",").map((c) => c.trim()) : [];
 
-  const where: Record<string, unknown> = { traite: false };
-  if (selectedCats.length > 0) {
-    where.categorie = { in: selectedCats };
-  }
+  // Collecte les sources par catégorie avec le bon quota
+  let sources: Awaited<ReturnType<typeof prisma.sourceBrute.findMany>> = [];
 
-  const sources = await prisma.sourceBrute.findMany({
-    where,
-    take: 5,
-    orderBy: { dateCollecte: "desc" },
-  });
+  if (categoryConfig && Object.keys(categoryConfig).length > 0) {
+    // Mode précis : fetch séparé par catégorie pour respecter les quotas
+    const batches = await Promise.all(
+      Object.entries(categoryConfig)
+        .filter(([, count]) => count > 0)
+        .map(([slug, count]) =>
+          prisma.sourceBrute.findMany({
+            where: { traite: false, categorie: slug },
+            take: count,
+            orderBy: { dateCollecte: "desc" },
+          })
+        )
+    );
+    sources = batches.flat();
+  } else {
+    // Mode simple : filtre par catégorie, max 5
+    const where: Record<string, unknown> = { traite: false };
+    if (selectedCats.length > 0) where.categorie = { in: selectedCats };
+    sources = await prisma.sourceBrute.findMany({
+      where,
+      take: 5,
+      orderBy: { dateCollecte: "desc" },
+    });
+  }
 
   if (sources.length === 0) {
     return NextResponse.json({ message: "Aucune source à traiter", generated: 0 });

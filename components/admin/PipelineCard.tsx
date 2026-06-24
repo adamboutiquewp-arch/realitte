@@ -17,31 +17,62 @@ interface PipelineCardProps {
 
 type StepState = "idle" | "loading" | "ok" | "error";
 
+// categoryConfig : { [slug]: count }
+type CategoryConfig = Record<string, number>;
+
 export default function PipelineCard({ lastLog }: PipelineCardProps) {
-  const [selected, setSelected] = useState<string[]>(CATEGORIES.map((c) => c.slug));
+  // Par défaut : toutes les catégories activées, 3 articles chacune
+  const [config, setConfig] = useState<CategoryConfig>(
+    Object.fromEntries(CATEGORIES.map((c) => [c.slug, 3]))
+  );
   const [collectState, setCollectState] = useState<StepState>("idle");
   const [generateState, setGenerateState] = useState<StepState>("idle");
   const [collectMsg, setCollectMsg] = useState("");
   const [generateMsg, setGenerateMsg] = useState("");
 
+  const selectedSlugs = Object.entries(config)
+    .filter(([, count]) => count > 0)
+    .map(([slug]) => slug);
+
   const toggleCat = (slug: string) => {
-    setSelected((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
-    );
+    setConfig((prev) => ({
+      ...prev,
+      [slug]: prev[slug] > 0 ? 0 : 3, // 0 = désactivé, 3 = défaut
+    }));
+  };
+
+  const setCount = (slug: string, value: number) => {
+    setConfig((prev) => ({ ...prev, [slug]: Math.max(0, Math.min(20, value)) }));
   };
 
   const toggleAll = () => {
-    setSelected(selected.length === CATEGORIES.length ? [] : CATEGORIES.map((c) => c.slug));
+    const allOn = CATEGORIES.every((c) => config[c.slug] > 0);
+    setConfig(
+      allOn
+        ? Object.fromEntries(CATEGORIES.map((c) => [c.slug, 0]))
+        : Object.fromEntries(CATEGORIES.map((c) => [c.slug, config[c.slug] > 0 ? config[c.slug] : 3]))
+    );
   };
 
-  async function trigger(type: "collect" | "generate", setState: (s: StepState) => void, setMsg: (m: string) => void) {
+  const totalArticles = Object.values(config).reduce((s, n) => s + n, 0);
+
+  async function trigger(
+    type: "collect" | "generate",
+    setState: (s: StepState) => void,
+    setMsg: (m: string) => void
+  ) {
+    if (selectedSlugs.length === 0) return;
     setState("loading");
     setMsg("");
     try {
       const res = await fetch("/api/admin/trigger", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, categories: selected }),
+        body: JSON.stringify({
+          type,
+          categories: selectedSlugs,
+          categoryConfig: config,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
@@ -75,40 +106,82 @@ export default function PipelineCard({ lastLog }: PipelineCardProps) {
       </div>
 
       <div className="p-5 space-y-5">
-        {/* Sélection des catégories */}
+        {/* Sélection catégories + quantité */}
         <div>
-          <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-[11px] font-bold tracking-wider uppercase text-[#999]">
-              Catégories à générer
+              Catégories et nombre d&apos;articles
             </p>
             <button
               onClick={toggleAll}
               className="text-[11px] text-[#bbb] hover:text-[#E53935] font-medium transition-colors"
             >
-              {selected.length === CATEGORIES.length ? "Tout désélectionner" : "Tout sélectionner"}
+              {CATEGORIES.every((c) => config[c.slug] > 0) ? "Tout désactiver" : "Tout activer"}
             </button>
           </div>
-          <div className="flex flex-wrap gap-2">
+
+          <div className="space-y-2">
             {CATEGORIES.map((cat) => {
-              const isOn = selected.includes(cat.slug);
+              const isOn = config[cat.slug] > 0;
+              const count = config[cat.slug];
               return (
-                <button
-                  key={cat.slug}
-                  onClick={() => toggleCat(cat.slug)}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-all ${
-                    isOn
-                      ? "text-white border-transparent"
-                      : "bg-[#F5F5F5] text-[#bbb] border-[#E8E8E8] hover:border-current"
-                  }`}
-                  style={isOn ? { backgroundColor: cat.color, borderColor: cat.color } : {}}
-                >
-                  {cat.label}
-                </button>
+                <div key={cat.slug} className="flex items-center gap-3">
+                  {/* Toggle catégorie */}
+                  <button
+                    onClick={() => toggleCat(cat.slug)}
+                    className="flex items-center gap-2 flex-1 min-w-0 px-3 py-2 rounded-lg border transition-all text-left"
+                    style={
+                      isOn
+                        ? { backgroundColor: `${cat.color}15`, borderColor: cat.color }
+                        : { backgroundColor: "#F9F9F9", borderColor: "#E8E8E8" }
+                    }
+                  >
+                    <span
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: isOn ? cat.color : "#ddd" }}
+                    />
+                    <span
+                      className="text-[12px] font-semibold truncate"
+                      style={{ color: isOn ? cat.color : "#bbb" }}
+                    >
+                      {cat.label}
+                    </span>
+                  </button>
+
+                  {/* Nombre d'articles */}
+                  <div className={`flex items-center gap-1 flex-shrink-0 ${!isOn ? "opacity-30 pointer-events-none" : ""}`}>
+                    <button
+                      onClick={() => setCount(cat.slug, count - 1)}
+                      className="w-7 h-7 flex items-center justify-center rounded border border-[#E8E8E8] text-[#666] hover:border-[#111] text-[14px] font-bold transition-colors"
+                    >
+                      −
+                    </button>
+                    <span
+                      className="w-8 text-center text-[13px] font-black"
+                      style={{ color: isOn ? cat.color : "#bbb" }}
+                    >
+                      {count}
+                    </span>
+                    <button
+                      onClick={() => setCount(cat.slug, count + 1)}
+                      className="w-7 h-7 flex items-center justify-center rounded border border-[#E8E8E8] text-[#666] hover:border-[#111] text-[14px] font-bold transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>
-          {selected.length === 0 && (
-            <p className="text-[11px] text-[#E53935] mt-1.5">Sélectionne au moins une catégorie</p>
+
+          {totalArticles === 0 && (
+            <p className="text-[11px] text-[#E53935] mt-2">Sélectionne au moins une catégorie</p>
+          )}
+
+          {totalArticles > 0 && (
+            <p className="text-[11px] text-[#bbb] mt-2">
+              Total : <strong className="text-[#111]">{totalArticles} article{totalArticles > 1 ? "s" : ""}</strong> à générer
+            </p>
           )}
         </div>
 
@@ -119,7 +192,7 @@ export default function PipelineCard({ lastLog }: PipelineCardProps) {
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-[#111]">1. Collecter les sources</p>
             <p className="text-[11px] text-[#999]">
-              Récupère les articles RSS des thèmes sélectionnés
+              Récupère les articles RSS des catégories sélectionnées
             </p>
             {collectMsg && (
               <p className={`text-[11px] mt-1 font-medium ${collectState === "ok" ? "text-green-600" : "text-[#E53935]"}`}>
@@ -129,12 +202,12 @@ export default function PipelineCard({ lastLog }: PipelineCardProps) {
           </div>
           <button
             onClick={() => trigger("collect", setCollectState, setCollectMsg)}
-            disabled={collectState === "loading" || selected.length === 0}
+            disabled={collectState === "loading" || selectedSlugs.length === 0}
             className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded text-[12px] font-bold transition-all ${
               collectState === "loading"  ? "bg-[#F5F5F5] text-[#999] cursor-wait" :
               collectState === "ok"      ? "bg-green-50 text-green-700 border border-green-200" :
               collectState === "error"   ? "bg-red-50 text-[#E53935] border border-red-200" :
-              selected.length === 0      ? "bg-[#F5F5F5] text-[#bbb] cursor-not-allowed" :
+              selectedSlugs.length === 0 ? "bg-[#F5F5F5] text-[#bbb] cursor-not-allowed" :
               "bg-[#111] text-white hover:bg-[#333]"
             }`}
           >
@@ -151,7 +224,9 @@ export default function PipelineCard({ lastLog }: PipelineCardProps) {
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-[#111]">2. Générer avec Claude</p>
             <p className="text-[11px] text-[#999]">
-              Rédige les articles avec images — ils arrivent dans "À valider"
+              {totalArticles > 0
+                ? `Génère ${totalArticles} article${totalArticles > 1 ? "s" : ""} — ils arrivent dans "À valider"`
+                : `Rédige les articles — ils arrivent dans "À valider"`}
             </p>
             {generateMsg && (
               <p className={`text-[11px] mt-1 font-medium ${generateState === "ok" ? "text-green-600" : "text-[#E53935]"}`}>
@@ -161,12 +236,12 @@ export default function PipelineCard({ lastLog }: PipelineCardProps) {
           </div>
           <button
             onClick={() => trigger("generate", setGenerateState, setGenerateMsg)}
-            disabled={generateState === "loading" || selected.length === 0}
+            disabled={generateState === "loading" || selectedSlugs.length === 0}
             className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded text-[12px] font-bold transition-all ${
               generateState === "loading" ? "bg-[#F5F5F5] text-[#999] cursor-wait" :
               generateState === "ok"     ? "bg-green-50 text-green-700 border border-green-200" :
               generateState === "error"  ? "bg-red-50 text-[#E53935] border border-red-200" :
-              selected.length === 0      ? "bg-[#F5F5F5] text-[#bbb] cursor-not-allowed" :
+              selectedSlugs.length === 0 ? "bg-[#F5F5F5] text-[#bbb] cursor-not-allowed" :
               "bg-[#E53935] text-white hover:bg-[#c62828]"
             }`}
           >

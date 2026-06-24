@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  const { type, categories } = await req.json();
+  const { type, categories, categoryConfig } = await req.json();
   if (type !== "collect" && type !== "generate") {
     return NextResponse.json({ error: "Type invalide" }, { status: 400 });
   }
@@ -15,10 +15,13 @@ export async function POST(req: Request) {
   const baseUrl = process.env.NEXTAUTH_URL || "https://www.realitte.com";
   const secret = process.env.CRON_SECRET || "";
 
-  // Ajoute les catégories en query param si spécifiées
   const url = new URL(`${baseUrl}/api/pipeline/${type}`);
   if (categories && categories.length > 0) {
     url.searchParams.set("categories", categories.join(","));
+  }
+  // Passe le config détaillé (slug → count) pour la génération
+  if (categoryConfig) {
+    url.searchParams.set("categoryConfig", JSON.stringify(categoryConfig));
   }
 
   try {
