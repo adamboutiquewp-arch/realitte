@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import InstallButton from "@/components/pwa/InstallButton";
 
 const NAV_COL1 = [
   { label: "Accueil",   href: "/" },
@@ -139,10 +140,11 @@ export default async function Footer() {
 
       {/* Bas de footer */}
       <div className="border-t border-[#222222]">
-        <div className="container-site py-4 flex flex-col md:flex-row items-center justify-between gap-2">
+        <div className="container-site py-4 flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="text-[12px] text-[#424242]">
             © {year} Réalitte. Tous droits réservés.
           </p>
+          <InstallButton />
           <p className="text-[11px] text-[#424242]">
             Contenu généré avec assistance IA · Sources vérifiées
           </p>
