@@ -4,23 +4,23 @@ import Parser from "rss-parser";
 
 const RSS_SOURCES = [
   // Actu générale
-  { url: "https://www.lemonde.fr/rss/une.xml",                      nom: "Le Monde" },
-  { url: "https://www.bfmtv.com/rss/news-24-7/",                    nom: "BFMTV" },
-  { url: "https://www.francetvinfo.fr/titres.rss",                   nom: "Franceinfo" },
+  { url: "https://www.lemonde.fr/rss/une.xml",                      nom: "Le Monde",           categorie: "actu" },
+  { url: "https://www.bfmtv.com/rss/news-24-7/",                    nom: "BFMTV",              categorie: "actu" },
+  { url: "https://www.francetvinfo.fr/titres.rss",                   nom: "Franceinfo",         categorie: "actu" },
   // Sport
-  { url: "https://www.lequipe.fr/rss/actu_rss.xml",                 nom: "L'Équipe" },
-  { url: "https://rmcsport.bfmtv.com/rss/football/",                nom: "RMC Sport" },
+  { url: "https://www.lequipe.fr/rss/actu_rss.xml",                 nom: "L'Équipe",           categorie: "sport" },
+  { url: "https://rmcsport.bfmtv.com/rss/football/",                nom: "RMC Sport",          categorie: "sport" },
   // Économie
-  { url: "https://www.lesechos.fr/rss/rss_une.xml",                 nom: "Les Échos" },
-  { url: "https://bfmbusiness.bfmtv.com/rss/bfmbusiness/",          nom: "BFM Business" },
+  { url: "https://www.lesechos.fr/rss/rss_une.xml",                 nom: "Les Échos",          categorie: "economie" },
+  { url: "https://bfmbusiness.bfmtv.com/rss/bfmbusiness/",          nom: "BFM Business",       categorie: "economie" },
   // Politique
-  { url: "https://www.lefigaro.fr/rss/figaro_politique.xml",        nom: "Le Figaro Politique" },
+  { url: "https://www.lefigaro.fr/rss/figaro_politique.xml",        nom: "Le Figaro Politique", categorie: "politique" },
   // Anecdote / Société
-  { url: "https://www.20minutes.fr/feeds/rss/societe.xml",          nom: "20 Minutes Société" },
-  { url: "https://feeds.bbci.co.uk/french/rss.xml",                 nom: "BBC Afrique" },
+  { url: "https://www.20minutes.fr/feeds/rss/societe.xml",          nom: "20 Minutes Société", categorie: "anecdote" },
+  { url: "https://feeds.bbci.co.uk/french/rss.xml",                 nom: "BBC Afrique",        categorie: "anecdote" },
   // Success Stories / Entrepreneuriat
-  { url: "https://www.forbes.fr/feed/",                             nom: "Forbes France" },
-  { url: "https://www.maddyness.com/feed/",                         nom: "Maddyness" },
+  { url: "https://www.forbes.fr/feed/",                             nom: "Forbes France",      categorie: "success-stories" },
+  { url: "https://www.maddyness.com/feed/",                         nom: "Maddyness",          categorie: "success-stories" },
 ];
 
 // Configure le parser pour extraire les images des flux RSS
@@ -63,11 +63,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
+  // Filtre par catégories si spécifiées (?categories=sport,politique)
+  const catsParam = req.nextUrl.searchParams.get("categories");
+  const selectedCats = catsParam ? catsParam.split(",").map((c) => c.trim()) : [];
+  const sources = selectedCats.length > 0
+    ? RSS_SOURCES.filter((s) => selectedCats.includes(s.categorie))
+    : RSS_SOURCES;
+
   let collected = 0;
   let skipped = 0;
   const errors: string[] = [];
 
-  for (const source of RSS_SOURCES) {
+  for (const source of sources) {
     try {
       const feed = await parser.parseURL(source.url);
 

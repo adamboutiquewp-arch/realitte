@@ -34,7 +34,16 @@ export async function PATCH(
     if (sourceNom !== undefined) data.sourceNom = sourceNom;
     if (metaTitle !== undefined) data.metaTitle = metaTitle || null;
     if (metaDescription !== undefined) data.metaDescription = metaDescription || null;
-    if (featured !== undefined) data.featured = featured;
+    if (featured !== undefined) {
+      data.featured = featured;
+      // Un seul article peut être en une à la fois
+      if (featured === true) {
+        await prisma.article.updateMany({
+          where: { featured: true, id: { not: id } },
+          data: { featured: false },
+        });
+      }
+    }
 
     if (statut !== undefined) {
       data.statut = statut;
