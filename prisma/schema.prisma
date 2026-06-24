@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────
+
+enum StatutArticle {
+  PENDING
+  DRAFT
+  PUBLISHED
+  REJECTED
+}
+
+enum StatutAvis {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RoleAdmin {
+  SUPER_ADMIN
+  EDITEUR
+}
+
+// ─── Models ───────────────────────────────────────────────
+
+model Categorie {
+  id       String    @id @default(cuid())
+  nom      String
+  slug     String    @unique
+  couleur  String    // code hex couleur du tag
+  ordre    Int       @default(0)
+  articles Article[]
+
+  @@map("categories")
+}
+
+model Article {
+  id              String        @id @default(cuid())
+  titre           String
+  slug            String        @unique
+  chapo           String        @db.Text
+  contenu         String        @db.Text
+  imageUrl        String?
+  imageAlt        String?
+  categorieId     String
+  categorie       Categorie     @relation(fields: [categorieId], references: [id])
+  sousCategorie   String?
+  tags            String[]
+  sourceUrl       String
+  sourceNom       String
+  statut          StatutArticle @default(PENDING)
+  auteur          String        @default("Réalitte IA")
+  vues            Int           @default(0)
+  tempsLecture    Int?          // minutes
+  scoreSeo        Int?
+  metaTitle       String?
+  metaDescription String?
+  featured        Boolean       @default(false)
+  dateCreation    DateTime      @default(now())
+  datePublication DateTime?
+  avis            Avis[]
+
+  @@index([statut, datePublication])
+  @@index([categorieId, statut])
+  @@index([slug])
+  @@map("articles")
+}
+
+model SourceBrute {
+  id             String   @id @default(cuid())
+  url            String
+  titreOriginal  String
+  contenuBrut    String   @db.Text
+  dateCollecte   DateTime @default(now())
+  traite         Boolean  @default(false)
+  erreur         String?
+
+  @@index([traite])
+  @@map("sources_brutes")
+}
+
+model Avis {
+  id           String     @id @default(cuid())
+  articleId    String
+  article      Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  auteurNom    String
+  email        String?
+  note         Int?
+  commentaire  String     @db.Text
+  statut       StatutAvis @default(PENDING)
+  dateCreation DateTime   @default(now())
+
+  @@index([articleId, statut])
+  @@map("avis")
+}
+
+model AbonneNewsletter {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  dateInscription DateTime @default(now())
+  actif           Boolean  @default(true)
+
+  @@map("abonnes_newsletter")
+}
+
+model AdminUser {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  motDePasseHash  String
+  nom             String?
+  role            RoleAdmin @default(EDITEUR)
+  actif           Boolean   @default(true)
+  dateCreation    DateTime  @default(now())
+  derniereConnexion DateTime?
+
+  @@map("admin_users")
+}
+
+model EspacePartenaire {
+  id       String  @id @default(cuid())
+  actif    Boolean @default(true)
+  titre    String
+  sousTitre String?
+  imageUrl String?
+  lien     String?
+  ctaTexte String  @default("EN SAVOIR PLUS")
+  position String  @default("home") // home, article, categorie
+
+  @@map("espace_partenaire")
+}
+
+model PipelineLog {
+  id          String   @id @default(cuid())
+  type        String   // collect | generate | error
+  message     String   @db.Text
+  metadata    Json?
+  dateCreation DateTime @default(now())
+
+  @@index([type, dateCreation])
+  @@map("pipeline_logs")
+}
