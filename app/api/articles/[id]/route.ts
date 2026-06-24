@@ -17,7 +17,7 @@ export async function PATCH(
   const {
     titre, chapo, contenu, imageUrl, imageAlt,
     categorieId, sousCategorie, tags, sourceUrl, sourceNom,
-    metaTitle, metaDescription, featured, statut,
+    metaTitle, metaDescription, featured, featuredCategorie, statut,
   } = body;
 
   try {
@@ -36,12 +36,24 @@ export async function PATCH(
     if (metaDescription !== undefined) data.metaDescription = metaDescription || null;
     if (featured !== undefined) {
       data.featured = featured;
-      // Un seul article peut être en une à la fois
       if (featured === true) {
         await prisma.article.updateMany({
           where: { featured: true, id: { not: id } },
           data: { featured: false },
         });
+      }
+    }
+    if (featuredCategorie !== undefined) {
+      data.featuredCategorie = featuredCategorie;
+      if (featuredCategorie === true) {
+        // Récupère la catégorie de cet article pour ne décocher que ceux de la même catégorie
+        const current = await prisma.article.findUnique({ where: { id }, select: { categorieId: true } });
+        if (current) {
+          await prisma.article.updateMany({
+            where: { featuredCategorie: true, categorieId: current.categorieId, id: { not: id } },
+            data: { featuredCategorie: false },
+          });
+        }
       }
     }
 

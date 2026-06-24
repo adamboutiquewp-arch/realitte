@@ -45,14 +45,15 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
     sous && sous !== "Tout" ? { sousCategorie: sous } : {};
 
   const [heroArticle, articles] = await Promise.all([
+    // Une de la catégorie : article featuredCategorie en priorité, sinon le plus récent
     prisma.article.findFirst({
       where: { statut: "PUBLISHED", categorieId: categorie.id },
-      orderBy: { datePublication: "desc" },
+      orderBy: [{ featuredCategorie: "desc" }, { datePublication: "desc" }],
     }),
     prisma.article.findMany({
       where: { statut: "PUBLISHED", categorieId: categorie.id, ...sousCatFilter },
       include: { categorie: true },
-      orderBy: { datePublication: "desc" },
+      orderBy: [{ featuredCategorie: "desc" }, { datePublication: "desc" }],
       take: 20,
     }),
   ]);

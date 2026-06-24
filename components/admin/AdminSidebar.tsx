@@ -21,6 +21,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Tableau de bord", href: "/admin",              icon: IconDashboard },
       { label: "Articles",        href: "/admin/articles",     icon: IconArticle },
+      { label: "Générer un article", href: "/admin/generer",   icon: IconGenerate },
       { label: "Catégories",      href: "/admin/categories",   icon: IconTag },
     ],
   },
@@ -132,6 +133,14 @@ export default function AdminSidebar({ role, open }: Props) {
 }
 
 // ── Icônes SVG ────────────────────────────────────────────────────────────────
+
+function IconGenerate({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+  );
+}
 
 function IconDashboard({ className = "" }: { className?: string }) {
   return (

@@ -60,13 +60,15 @@ model Article {
   scoreSeo        Int?
   metaTitle       String?
   metaDescription String?
-  featured        Boolean       @default(false)
+  featured          Boolean       @default(false)
+  featuredCategorie Boolean       @default(false)
   dateCreation    DateTime      @default(now())
   datePublication DateTime?
   avis            Avis[]
 
   @@index([statut, datePublication])
   @@index([categorieId, statut])
+  @@index([categorieId, featuredCategorie])
   @@index([slug])
   @@map("articles")
 }

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import DeleteArticleButton from "@/components/admin/DeleteArticleButton";
 import FeaturedButton from "@/components/admin/FeaturedButton";
+import FeaturedCategorieButton from "@/components/admin/FeaturedCategorieButton";
 
 export const metadata: Metadata = { title: "Articles" };
 export const dynamic = "force-dynamic";
@@ -180,6 +181,14 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2 flex-wrap">
+                        {a.statut === "PUBLISHED" && (
+                          <FeaturedCategorieButton
+                            id={a.id}
+                            featuredCategorie={a.featuredCategorie}
+                            categorieNom={a.categorie.nom}
+                            categorieColor={a.categorie.couleur}
+                          />
+                        )}
                         {a.statut === "PUBLISHED" && (
                           <FeaturedButton id={a.id} featured={a.featured} />
                         )}
