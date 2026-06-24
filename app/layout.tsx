@@ -104,6 +104,15 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
+        {/* PWA */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Réalitte" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#E53935" />
+        <script dangerouslySetInnerHTML={{
+          __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js')})}`
+        }} />
       </head>
       <body className="min-h-screen flex flex-col bg-white text-[#111111] antialiased">
         {children}
