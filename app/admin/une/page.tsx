@@ -33,7 +33,7 @@ export default async function UnePage() {
   // Une globale (page d'accueil)
   const uneGlobale = await prisma.article.findFirst({
     where: { statut: "PUBLISHED", featured: true },
-    select: { id: true, titre: true, chapo: true, imageUrl: true, slug: true, categorie: { select: { nom: true, couleur: true } } },
+    select: { id: true, titre: true, chapo: true, imageUrl: true, slug: true },
   });
 
   const allPublished = await prisma.article.findMany({
@@ -71,7 +71,14 @@ export default async function UnePage() {
           type="global"
           couleur="#E53935"
           nomCategorie="Page d'accueil"
-          uneArticle={uneGlobale ? { ...uneGlobale, chapo: uneGlobale.chapo || "" } : null}
+          uneArticle={uneGlobale ? {
+            id: uneGlobale.id,
+            titre: uneGlobale.titre,
+            imageUrl: uneGlobale.imageUrl,
+            chapo: uneGlobale.chapo || "",
+            slug: uneGlobale.slug,
+            featuredCategorie: true,
+          } : null}
           articles={allPublished.map((a) => ({
             id: a.id,
             titre: a.titre,
