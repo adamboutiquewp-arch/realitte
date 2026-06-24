@@ -8,7 +8,13 @@ function getInitials(name?: string | null) {
   return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
-export default function AdminTopBar({ user }: { user: User }) {
+interface Props {
+  user: User;
+  sidebarOpen: boolean;
+  onToggle: () => void;
+}
+
+export default function AdminTopBar({ user, sidebarOpen, onToggle }: Props) {
   const now = new Date();
   const dateStr = now.toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -18,12 +24,36 @@ export default function AdminTopBar({ user }: { user: User }) {
   });
 
   return (
-    <header className="bg-white border-b border-[#EBEBEB] px-6 h-14 flex items-center justify-between flex-shrink-0">
-      <p className="text-[12px] text-[#999] capitalize hidden sm:block">{dateStr}</p>
-      <span className="sm:hidden font-bold text-[#111]">Admin</span>
+    <header className="bg-white border-b border-[#EBEBEB] h-14 flex items-center px-4 gap-3 flex-shrink-0 sticky top-0 z-20">
+      {/* Toggle sidebar */}
+      <button
+        onClick={onToggle}
+        title={sidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
+        className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[#F5F5F5] transition-colors flex-shrink-0 text-[#555]"
+      >
+        {sidebarOpen ? (
+          // X close icon
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        ) : (
+          // Hamburger open icon
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        )}
+      </button>
 
-      <div className="flex items-center gap-4 ml-auto">
-        <div className="text-right hidden md:block">
+      {/* Date */}
+      <p className="text-[12px] text-[#999] capitalize hidden md:block flex-1">{dateStr}</p>
+      <div className="flex-1 md:hidden" />
+
+      {/* Right */}
+      <div className="flex items-center gap-3">
+        <div className="text-right hidden lg:block">
           <p className="text-[13px] font-semibold text-[#111] leading-none">{user.name}</p>
           <p className="text-[11px] text-[#999] mt-0.5">{user.email}</p>
         </div>
@@ -41,7 +71,7 @@ export default function AdminTopBar({ user }: { user: User }) {
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" x2="9" y1="12" y2="12"/>
           </svg>
-          Déconnexion
+          <span className="hidden sm:inline">Déconnexion</span>
         </button>
       </div>
     </header>

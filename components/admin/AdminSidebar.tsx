@@ -45,7 +45,12 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export default function AdminSidebar({ role }: { role: string }) {
+interface Props {
+  role: string;
+  open: boolean;
+}
+
+export default function AdminSidebar({ role, open }: Props) {
   const pathname = usePathname();
   const isSuperAdmin = role === "SUPER_ADMIN";
 
@@ -53,7 +58,11 @@ export default function AdminSidebar({ role }: { role: string }) {
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
   return (
-    <aside className="hidden lg:flex flex-col fixed top-0 left-0 h-full w-64 bg-[#0F0F0F] z-40 select-none">
+    <aside
+      className={`fixed top-0 left-0 h-full w-64 bg-[#0F0F0F] z-40 flex flex-col select-none transition-transform duration-300 ease-in-out ${
+        open ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
       {/* Logo */}
       <div className="px-6 pt-7 pb-6 border-b border-white/[0.08]">
         <Link href="/" target="_blank" className="block">
