@@ -92,11 +92,11 @@ export async function GET(req: NextRequest) {
 
         const sourceImage = extractSourceImage(item as Parser.Item & CustomItem);
 
-        // Stocke les données en JSON pour récupérer l'image dans generate
         await prisma.sourceBrute.create({
           data: {
             url: item.link,
             titreOriginal: item.title,
+            categorie: source.categorie,
             contenuBrut: JSON.stringify({
               title: item.title,
               description: item.contentSnippet || item.summary || "",

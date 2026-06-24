@@ -76,11 +76,13 @@ model SourceBrute {
   url            String
   titreOriginal  String
   contenuBrut    String   @db.Text
+  categorie      String?
   dateCollecte   DateTime @default(now())
   traite         Boolean  @default(false)
   erreur         String?
 
   @@index([traite])
+  @@index([traite, categorie])
   @@map("sources_brutes")
 }
 

@@ -59,8 +59,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
+  // Filtre par catégories si spécifiées (?categories=sport,politique)
+  const catsParam = req.nextUrl.searchParams.get("categories");
+  const selectedCats = catsParam ? catsParam.split(",").map((c) => c.trim()) : [];
+
+  const where: Record<string, unknown> = { traite: false };
+  if (selectedCats.length > 0) {
+    where.categorie = { in: selectedCats };
+  }
+
   const sources = await prisma.sourceBrute.findMany({
-    where: { traite: false },
+    where,
     take: 5,
     orderBy: { dateCollecte: "desc" },
   });
