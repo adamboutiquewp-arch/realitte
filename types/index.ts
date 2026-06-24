@@ -57,8 +57,9 @@ export interface DerniereInfo {
   slug: string;
   categorieNom: string;
   categorieCouleur: string;
+  categorieSlug: string;
   imageUrl: string | null;
-  datePublication: Date | string;
+  datePublication: Date | string | null;
 }
 
 export interface NavItem {
