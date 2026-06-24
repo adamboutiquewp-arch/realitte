@@ -3,11 +3,24 @@ import { prisma } from "@/lib/prisma";
 import Parser from "rss-parser";
 
 const RSS_SOURCES = [
-  { url: "https://www.lemonde.fr/rss/une.xml",           nom: "Le Monde" },
-  { url: "https://www.lequipe.fr/rss/home_une.xml",      nom: "L'Équipe" },
-  { url: "https://www.lesechos.fr/rss/rss_une.xml",      nom: "Les Échos" },
-  { url: "https://www.bfmtv.com/rss/news-24-7/",         nom: "BFMTV" },
-  { url: "https://feeds.bbci.co.uk/french/rss.xml",      nom: "BBC Afrique" },
+  // Actu générale
+  { url: "https://www.lemonde.fr/rss/une.xml",                      nom: "Le Monde" },
+  { url: "https://www.bfmtv.com/rss/news-24-7/",                    nom: "BFMTV" },
+  { url: "https://www.francetvinfo.fr/titres.rss",                   nom: "Franceinfo" },
+  // Sport
+  { url: "https://www.lequipe.fr/rss/actu_rss.xml",                 nom: "L'Équipe" },
+  { url: "https://rmcsport.bfmtv.com/rss/football/",                nom: "RMC Sport" },
+  // Économie
+  { url: "https://www.lesechos.fr/rss/rss_une.xml",                 nom: "Les Échos" },
+  { url: "https://bfmbusiness.bfmtv.com/rss/bfmbusiness/",          nom: "BFM Business" },
+  // Politique
+  { url: "https://www.lefigaro.fr/rss/figaro_politique.xml",        nom: "Le Figaro Politique" },
+  // Anecdote / Société
+  { url: "https://www.20minutes.fr/feeds/rss/societe.xml",          nom: "20 Minutes Société" },
+  { url: "https://feeds.bbci.co.uk/french/rss.xml",                 nom: "BBC Afrique" },
+  // Success Stories / Entrepreneuriat
+  { url: "https://www.forbes.fr/feed/",                             nom: "Forbes France" },
+  { url: "https://www.maddyness.com/feed/",                         nom: "Maddyness" },
 ];
 
 const parser = new Parser({ timeout: 10000 });
