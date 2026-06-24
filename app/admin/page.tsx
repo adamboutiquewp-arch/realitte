@@ -58,23 +58,37 @@ export default async function AdminDashboard() {
 
   return (
     <div className="max-w-[1100px]">
+      {/* ── Bannière À valider ── */}
+      {stats.totalPending > 0 && (
+        <Link
+          href="/admin/articles?statut=PENDING"
+          className="flex items-center justify-between gap-4 px-5 py-4 bg-[#E53935] text-white rounded-xl mb-6 hover:bg-[#c62828] transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div>
+              <p className="text-[15px] font-black">
+                {stats.totalPending} article{stats.totalPending > 1 ? "s" : ""} en attente de validation
+              </p>
+              <p className="text-[12px] text-white/70">
+                Clique ici pour les réviser et les publier sur le site
+              </p>
+            </div>
+          </div>
+          <span className="text-white/80 text-[18px] group-hover:translate-x-1 transition-transform">→</span>
+        </Link>
+      )}
+
       {/* En-tête */}
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-[22px] font-black text-[#111]">Tableau de bord</h1>
           <p className="text-[13px] text-[#999] mt-0.5">Vue d&apos;ensemble de Réalitte</p>
         </div>
-        {stats.totalPending > 0 && (
-          <Link
-            href="/admin/articles?statut=PENDING"
-            className="flex items-center gap-2 px-4 py-2 bg-[#E53935] text-white text-[12px] font-bold tracking-wide rounded hover:bg-[#c62828] transition-colors"
-          >
-            <span className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center text-[11px] font-black">
-              {stats.totalPending}
-            </span>
-            À valider
-          </Link>
-        )}
       </div>
 
       {/* KPI Cards */}
