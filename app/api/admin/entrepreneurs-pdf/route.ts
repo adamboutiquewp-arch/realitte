@@ -87,8 +87,9 @@ export async function GET() {
   });
 
   const pdfBytes = await doc.save();
+  const buffer = Buffer.from(pdfBytes);
 
-  return new NextResponse(pdfBytes, {
+  return new NextResponse(buffer, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": 'attachment; filename="realitte-dossier-entrepreneur.pdf"',
