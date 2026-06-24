@@ -200,12 +200,12 @@ export default function Header() {
                     <Link
                       key={href}
                       href={href}
-                      className={`flex items-center gap-3 px-6 py-3.5 text-[14px] font-bold transition-colors ${
+                      className={`flex items-center gap-4 px-6 py-5 text-[20px] font-bold transition-colors ${
                         isActive(href) ? "text-[#E53935]" : "text-[#111] hover:text-[#E53935]"
                       }`}
                     >
                       <span
-                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        className="w-3.5 h-3.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: couleur }}
                       />
                       {label}
