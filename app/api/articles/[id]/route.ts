@@ -43,7 +43,6 @@ export async function PATCH(
       }
     }
 
-    // Calcul temps de lecture
     if (contenu) {
       const wordCount = contenu.replace(/<[^>]+>/g, "").split(/\s+/).length;
       data.tempsLecture = Math.max(1, Math.ceil(wordCount / 200));
@@ -59,6 +58,26 @@ export async function PATCH(
   } catch (error) {
     console.error("PATCH /api/articles/[id] error:", error);
     return NextResponse.json({ error: "Erreur lors de la mise à jour" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  try {
+    await prisma.article.delete({ where: { id } });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("DELETE /api/articles/[id] error:", error);
+    return NextResponse.json({ error: "Erreur lors de la suppression" }, { status: 500 });
   }
 }
 

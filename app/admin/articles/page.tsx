@@ -2,23 +2,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
+import DeleteArticleButton from "@/components/admin/DeleteArticleButton";
 
 export const metadata: Metadata = { title: "Articles" };
 export const dynamic = "force-dynamic";
 
 const STATUTS = [
-  { value: "",          label: "Tous" },
-  { value: "PENDING",   label: "En attente" },
-  { value: "PUBLISHED", label: "Publiés" },
-  { value: "DRAFT",     label: "Brouillons" },
-  { value: "REJECTED",  label: "Rejetés" },
+  { value: "",          label: "Tous",       color: "#666" },
+  { value: "PENDING",   label: "En attente", color: "#E53935" },
+  { value: "PUBLISHED", label: "Publiés",    color: "#16A34A" },
+  { value: "DRAFT",     label: "Brouillons", color: "#777" },
+  { value: "REJECTED",  label: "Rejetés",    color: "#DC2626" },
 ];
 
-const STATUT_BADGE: Record<string, string> = {
-  PENDING:   "bg-[#FFF3CD] text-[#856404]",
-  PUBLISHED: "bg-[#D4EDDA] text-[#155724]",
-  DRAFT:     "bg-[#E2E3E5] text-[#383D41]",
-  REJECTED:  "bg-[#F8D7DA] text-[#721C24]",
+const STATUT_STYLE: Record<string, string> = {
+  PENDING:   "bg-orange-50 text-orange-700 border border-orange-200",
+  PUBLISHED: "bg-green-50  text-green-700  border border-green-200",
+  DRAFT:     "bg-gray-100  text-gray-600   border border-gray-200",
+  REJECTED:  "bg-red-50    text-red-700    border border-red-200",
 };
 
 const STATUT_LABEL: Record<string, string> = {
@@ -45,7 +46,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
   const [articles, total, categories] = await Promise.all([
     prisma.article.findMany({
       where,
-      include: { categorie: { select: { nom: true, couleur: true } } },
+      include: { categorie: { select: { nom: true, couleur: true, slug: true } } },
       orderBy: { dateCreation: "desc" },
       take: perPage,
       skip,
@@ -62,116 +63,145 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
     if (cat) sp.set("cat", cat);
     sp.set("page", "1");
     Object.entries(params).forEach(([k, v]) => (v ? sp.set(k, v) : sp.delete(k)));
-    return `/admin/articles?${sp.toString()}`;
+    const query = sp.toString();
+    return `/admin/articles${query ? `?${query}` : ""}`;
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-[1100px]">
+      {/* En-tête */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-black text-[#111111]">Articles</h1>
-          <p className="text-[13px] text-[#9E9E9E]">{total} article{total > 1 ? "s" : ""} au total</p>
+          <h1 className="text-[22px] font-black text-[#111]">Articles</h1>
+          <p className="text-[13px] text-[#999] mt-0.5">
+            {total} article{total > 1 ? "s" : ""} au total
+          </p>
         </div>
       </div>
 
-      {/* Filtres */}
-      <div className="bg-white p-4 mb-6 flex flex-wrap gap-3 items-center">
-        <div className="flex gap-1 flex-wrap">
-          {STATUTS.map((s) => (
-            <Link
-              key={s.value}
-              href={buildUrl({ statut: s.value })}
-              className={`px-4 py-2 text-[12px] font-bold tracking-wider uppercase transition-colors ${
-                statut === s.value || (!statut && !s.value)
-                  ? "bg-black text-white"
-                  : "bg-[#F5F5F5] text-[#424242] hover:bg-[#E0E0E0]"
-              }`}
-            >
-              {s.label}
-            </Link>
-          ))}
-        </div>
+      {/* Filtres statut */}
+      <div className="bg-white rounded-xl border border-[#EBEBEB] p-4 mb-5">
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-[#bbb] mr-1">Statut</span>
+          {STATUTS.map((s) => {
+            const active = statut === s.value || (!statut && !s.value);
+            return (
+              <Link
+                key={s.value}
+                href={buildUrl({ statut: s.value })}
+                className={`px-3.5 py-1.5 rounded-lg text-[12px] font-semibold transition-all ${
+                  active
+                    ? "bg-[#111] text-white"
+                    : "bg-[#F5F5F5] text-[#666] hover:bg-[#EBEBEB]"
+                }`}
+              >
+                {s.label}
+              </Link>
+            );
+          })}
 
-        <select
-          onChange={(e) => {
-            window.location.href = buildUrl({ cat: e.target.value });
-          }}
-          defaultValue={cat || ""}
-          className="ml-auto px-3 py-2 border border-[#E0E0E0] text-[13px] outline-none focus:border-black"
-        >
-          <option value="">Toutes catégories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.slug}>{c.nom}</option>
-          ))}
-        </select>
+          {/* Filtre catégorie par liens */}
+          {categories.length > 0 && (
+            <>
+              <span className="text-[#E0E0E0] mx-1">|</span>
+              <span className="text-[11px] font-bold tracking-wider uppercase text-[#bbb] mr-1">Catégorie</span>
+              <Link
+                href={buildUrl({ cat: "" })}
+                className={`px-3.5 py-1.5 rounded-lg text-[12px] font-semibold transition-all ${
+                  !cat ? "bg-[#111] text-white" : "bg-[#F5F5F5] text-[#666] hover:bg-[#EBEBEB]"
+                }`}
+              >
+                Toutes
+              </Link>
+              {categories.map((c) => (
+                <Link
+                  key={c.id}
+                  href={buildUrl({ cat: c.slug })}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12px] font-semibold transition-all ${
+                    cat === c.slug
+                      ? "text-white"
+                      : "bg-[#F5F5F5] text-[#666] hover:bg-[#EBEBEB]"
+                  }`}
+                  style={cat === c.slug ? { backgroundColor: c.couleur } : {}}
+                >
+                  {c.nom}
+                </Link>
+              ))}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white overflow-x-auto">
-        <table className="w-full text-[13px]">
-          <thead>
-            <tr className="border-b-2 border-[#E0E0E0]">
-              <th className="text-left px-5 py-4 text-[11px] font-bold tracking-widest uppercase text-[#9E9E9E]">Article</th>
-              <th className="text-left px-4 py-4 text-[11px] font-bold tracking-widest uppercase text-[#9E9E9E] hidden md:table-cell">Catégorie</th>
-              <th className="text-left px-4 py-4 text-[11px] font-bold tracking-widest uppercase text-[#9E9E9E] hidden lg:table-cell">Statut</th>
-              <th className="text-left px-4 py-4 text-[11px] font-bold tracking-widest uppercase text-[#9E9E9E] hidden lg:table-cell">Date</th>
-              <th className="text-left px-4 py-4 text-[11px] font-bold tracking-widest uppercase text-[#9E9E9E]">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#F5F5F5]">
-            {articles.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-12 text-[#9E9E9E]">
-                  Aucun article trouvé.
-                </td>
-              </tr>
-            ) : (
-              articles.map((a) => (
-                <tr key={a.id} className="hover:bg-[#FAFAFA] transition-colors">
-                  <td className="px-5 py-4">
-                    <p className="font-semibold text-[#111111] line-clamp-1 max-w-sm">{a.titre}</p>
-                    <p className="text-[11px] text-[#9E9E9E] mt-0.5 line-clamp-1">{a.chapo}</p>
-                  </td>
-                  <td className="px-4 py-4 hidden md:table-cell">
-                    <span
-                      className="text-[11px] font-bold tracking-widest uppercase"
-                      style={{ color: a.categorie.couleur }}
-                    >
-                      {a.categorie.nom}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 hidden lg:table-cell">
-                    <span className={`px-2.5 py-1 text-[11px] font-bold ${STATUT_BADGE[a.statut]}`}>
-                      {STATUT_LABEL[a.statut]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 hidden lg:table-cell text-[#9E9E9E]">
-                    {formatDate(a.dateCreation)}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/admin/articles/${a.id}`}
-                        className="px-3 py-1.5 bg-black text-white text-[11px] font-bold tracking-wider uppercase hover:bg-[#333] transition-colors"
-                      >
-                        Éditer
-                      </Link>
-                      {a.statut === "PUBLISHED" && (
-                        <Link
-                          href={`/${a.categorie.nom.toLowerCase()}/${a.slug}`}
-                          target="_blank"
-                          className="px-3 py-1.5 border border-[#E0E0E0] text-[11px] font-bold tracking-wider uppercase text-[#424242] hover:border-black transition-colors"
-                        >
-                          Voir
-                        </Link>
-                      )}
-                    </div>
-                  </td>
+      <div className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
+        {articles.length === 0 ? (
+          <div className="py-16 text-center">
+            <p className="text-[14px] text-[#bbb]">Aucun article trouvé.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="border-b border-[#F0F0F0]">
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold tracking-wider uppercase text-[#bbb]">Article</th>
+                  <th className="text-left px-4 py-3.5 text-[11px] font-bold tracking-wider uppercase text-[#bbb] hidden md:table-cell">Catégorie</th>
+                  <th className="text-left px-4 py-3.5 text-[11px] font-bold tracking-wider uppercase text-[#bbb]">Statut</th>
+                  <th className="text-left px-4 py-3.5 text-[11px] font-bold tracking-wider uppercase text-[#bbb] hidden lg:table-cell">Date</th>
+                  <th className="px-4 py-3.5 text-right text-[11px] font-bold tracking-wider uppercase text-[#bbb]">Actions</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="divide-y divide-[#F8F8F8]">
+                {articles.map((a) => (
+                  <tr key={a.id} className="hover:bg-[#FAFAFA] transition-colors group">
+                    <td className="px-6 py-4 max-w-xs">
+                      <p className="font-semibold text-[#111] line-clamp-1">{a.titre}</p>
+                      <p className="text-[11px] text-[#bbb] mt-0.5 line-clamp-1">{a.chapo}</p>
+                    </td>
+                    <td className="px-4 py-4 hidden md:table-cell">
+                      <span
+                        className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded"
+                        style={{
+                          color: a.categorie.couleur,
+                          backgroundColor: `${a.categorie.couleur}18`,
+                        }}
+                      >
+                        {a.categorie.nom}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className={`px-2 py-1 text-[10px] font-bold rounded ${STATUT_STYLE[a.statut]}`}>
+                        {STATUT_LABEL[a.statut]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 hidden lg:table-cell text-[#bbb] text-[12px]">
+                      {formatDate(a.dateCreation)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center justify-end gap-3">
+                        {a.statut === "PUBLISHED" && (
+                          <Link
+                            href={`/${a.categorie.slug}/${a.slug}`}
+                            target="_blank"
+                            className="text-[11px] font-medium text-[#bbb] hover:text-[#111] transition-colors"
+                          >
+                            Voir ↗
+                          </Link>
+                        )}
+                        <Link
+                          href={`/admin/articles/${a.id}`}
+                          className="px-3 py-1.5 bg-[#111] text-white text-[11px] font-bold rounded hover:bg-[#E53935] transition-colors"
+                        >
+                          Éditer
+                        </Link>
+                        <DeleteArticleButton id={a.id} titre={a.titre} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
@@ -181,10 +211,10 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
             <Link
               key={p}
               href={buildUrl({ page: String(p) })}
-              className={`w-9 h-9 flex items-center justify-center text-[13px] font-bold transition-colors ${
+              className={`w-9 h-9 flex items-center justify-center text-[13px] font-bold rounded transition-all ${
                 p === currentPage
-                  ? "bg-black text-white"
-                  : "bg-white text-[#424242] border border-[#E0E0E0] hover:border-black"
+                  ? "bg-[#111] text-white"
+                  : "bg-white text-[#666] border border-[#EBEBEB] hover:border-[#111]"
               }`}
             >
               {p}
