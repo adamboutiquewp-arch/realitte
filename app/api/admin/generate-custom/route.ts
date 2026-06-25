@@ -103,7 +103,10 @@ export async function POST(req: Request) {
     ? `\n\nVoici des informations récentes trouvées sur internet sur ce sujet. Utilise ces faits réels pour écrire l'article :\n\n${webContext}\n\nIMPORTANT: Utilise ces informations réelles. Ne les invente pas, ne les modifie pas.`
     : "";
 
+  const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+
   const prompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
+Nous sommes le ${today}. Base-toi sur cette date pour tous les calculs de temps (échéances, délais, anniversaires, mandats, etc.).
 Rédige un article complet et original sur le sujet suivant : "${sujet}"${contextBlock}
 
 Règles :
