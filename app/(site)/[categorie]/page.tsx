@@ -53,6 +53,7 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
     prisma.article.findFirst({
       where: { statut: "PUBLISHED", categorieId: categorie.id },
       orderBy: [{ featuredCategorie: "desc" }, { datePublication: "desc" }],
+      select: { id: true, titre: true, slug: true, chapo: true, imageUrl: true, imageClean: true },
     }),
     prisma.article.findMany({
       where: { statut: "PUBLISHED", categorieId: categorie.id, ...sousCatFilter },
@@ -99,10 +100,11 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
             />
           </div>
         )}
-        {/* Overlay léger — dégradé du bas uniquement */}
-        <div className="absolute inset-0" style={{
-          background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.30) 50%, rgba(0,0,0,0.05) 100%)"
-        }} />
+        {!heroArticle?.imageClean && (
+          <div className="absolute inset-0" style={{
+            background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.30) 50%, rgba(0,0,0,0.05) 100%)"
+          }} />
+        )}
 
         <div className="container-site relative z-10 flex flex-col justify-end min-h-[260px] sm:min-h-[380px] md:min-h-[460px] px-5 sm:px-8 pb-7 sm:pb-12 pt-6">
           {/* Badge catégorie */}
@@ -113,7 +115,16 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
           </div>
 
           {heroArticle ? (
-            /* Article en une */
+            heroArticle.imageClean ? (
+              /* Image propre : juste le bouton */
+              <Link
+                href={`/${catSlug}/${heroArticle.slug}`}
+                className="inline-flex items-center px-5 py-3 bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors w-full sm:w-auto justify-center sm:justify-start"
+              >
+                Lire l&apos;article
+              </Link>
+            ) : (
+            /* Article en une avec texte */
             <div className="max-w-[520px]">
               <h1
                 className="text-white font-black leading-[1.05] tracking-tight mb-2 sm:mb-4"
@@ -133,6 +144,7 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
                 Lire l&apos;article
               </Link>
             </div>
+            )
           ) : (
             /* Fallback si aucun article */
             <div className="max-w-[520px]">
