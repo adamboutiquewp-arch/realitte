@@ -259,6 +259,15 @@ export default function ArticleEditor({ article, categories }: Props) {
                 ))}
               </select>
             </Field>
+            <label className="flex items-center gap-3 cursor-pointer p-3 bg-amber-50 border border-amber-200">
+              <input type="checkbox" checked={form.imageClean}
+                onChange={(e) => setForm((f) => ({ ...f, imageClean: e.target.checked }))}
+                className="w-4 h-4 accent-amber-500 flex-shrink-0" />
+              <div>
+                <span className="text-[13px] font-bold text-amber-800">Image propre — sans texte dessus</span>
+                <p className="text-[11px] text-amber-600 mt-0.5">Cocher pour que l&apos;image apparaisse sans titre ni texte en accueil</p>
+              </div>
+            </label>
             <Field label="Sous-catégorie">
               <input type="text" value={form.sousCategorie} onChange={update("sousCategorie")}
                 className="w-full px-4 py-3 border border-[#E0E0E0] text-[13px] outline-none focus:border-black" />
@@ -389,15 +398,6 @@ export default function ArticleEditor({ article, categories }: Props) {
                 onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
                 className="w-4 h-4 accent-[#E53935]" />
               <span className="text-[13px] font-medium">Article hero (featured)</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer p-3 bg-amber-50 border border-amber-200">
-              <input type="checkbox" checked={form.imageClean}
-                onChange={(e) => setForm((f) => ({ ...f, imageClean: e.target.checked }))}
-                className="w-4 h-4 accent-amber-500 flex-shrink-0" />
-              <div>
-                <span className="text-[13px] font-bold text-amber-800">Image propre — sans texte dessus</span>
-                <p className="text-[11px] text-amber-600 mt-0.5">Le titre et la catégorie n&apos;apparaîtront pas sur l&apos;image (ni sur l&apos;accueil, ni sur la page article)</p>
-              </div>
             </label>
           </div>
         </div>

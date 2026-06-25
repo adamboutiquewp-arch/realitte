@@ -17,7 +17,7 @@ export async function PATCH(
   const {
     titre, chapo, contenu, imageUrl, imageAlt,
     categorieId, sousCategorie, tags, sourceUrl, sourceNom,
-    metaTitle, metaDescription, featured, featuredCategorie, statut,
+    metaTitle, metaDescription, featured, featuredCategorie, statut, imageClean,
   } = body;
 
   try {
@@ -43,6 +43,7 @@ export async function PATCH(
         });
       }
     }
+    if (imageClean !== undefined) data.imageClean = imageClean;
     if (featuredCategorie !== undefined) {
       data.featuredCategorie = featuredCategorie;
       if (featuredCategorie === true) {
