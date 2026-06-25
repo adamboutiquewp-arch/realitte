@@ -53,9 +53,16 @@ function buildText(article: Article, network: Network): string {
     case "tiktok":
       return [`${article.titre} 🔥`, "", article.chapo.slice(0, 150) + (article.chapo.length > 150 ? "..." : ""), "", hashtags5].join("\n").trim();
     case "x": {
-      const short = article.chapo.slice(0, 200);
-      const tags = article.tags.slice(0, 3).map((t) => `#${t.replace(/\s+/g, "")}`).join(" ");
-      return [`${article.titre}`, "", short, "", url, tags].join("\n").trim();
+      // Twitter compte l'URL comme 23 chars + 1 espace = 24 réservés
+      // On cible 256 chars max pour le texte (256 + 24 = 280)
+      const tags = article.tags.slice(0, 2).map((t) => `#${t.replace(/\s+/g, "")}`).join(" ");
+      const suffix = tags ? `\n\n${tags}` : "";
+      const prefix = `${article.titre}\n\n`;
+      const available = Math.max(0, 256 - prefix.length - suffix.length);
+      const chapo = article.chapo.length > available
+        ? article.chapo.slice(0, available - 1) + "…"
+        : article.chapo;
+      return (prefix + chapo + suffix).trim();
     }
   }
 }
@@ -199,8 +206,8 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
                   className="w-full px-3 py-3 border border-[#E0E0E0] text-[13px] outline-none resize-none"
                 />
                 {network === "x" && (
-                  <p className={`text-[11px] mt-1 ${currentText.length > 280 ? "text-red-500 font-bold" : "text-[#999]"}`}>
-                    {currentText.length} / 280 caractères
+                  <p className={`text-[11px] mt-1 ${currentText.length + 24 > 280 ? "text-red-500 font-bold" : "text-[#999]"}`}>
+                    {currentText.length + 24} / 280 caractères (URL incluse)
                   </p>
                 )}
               </div>
