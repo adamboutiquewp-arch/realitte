@@ -139,15 +139,22 @@ export default async function HomePage() {
       <div className="container-site">
         <AlaUneGrid articles={alaUne.map(mapToCard)} />
         <hr className="separator my-4" />
-        <EspacePartenaire />
+
+        {/* Espace partenaire + Newsletter sur la même ligne */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-center my-8 md:my-12">
+          <EspacePartenaire />
+          <div className="flex flex-col items-center text-center lg:border-l lg:border-[#E0E0E0] lg:pl-8">
+            <Newsletter />
+          </div>
+        </div>
+
         <hr className="separator my-4" />
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 py-10 md:py-12">
           <SuccessStories articles={successStories.map(mapToCard)} />
 
           <aside className="lg:pl-8 lg:border-l lg:border-[#E0E0E0]">
-            <Newsletter />
-            <div className="mt-10 pt-8 border-t border-[#E0E0E0]">
+            <div className="mt-0 pt-0">
               <h3 className="text-[15px] font-black tracking-tight uppercase mb-1">
                 Réalitte.
               </h3>

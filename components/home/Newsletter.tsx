@@ -34,11 +34,11 @@ export default function Newsletter() {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <h2 className="text-[17px] font-black tracking-tight uppercase mb-1">
         Newsletter
       </h2>
-      <div className="w-8 h-[3px] bg-[#E53935] mb-4" />
+      <div className="w-8 h-[3px] bg-[#E53935] mb-4 mx-auto lg:mx-0" />
       <p className="text-[13px] text-[#424242] leading-relaxed mb-5">
         L&apos;actualité sans filtre, chaque matin dans votre boîte mail.
       </p>
