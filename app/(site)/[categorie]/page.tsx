@@ -87,78 +87,80 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
   return (
     <>
       {/* ── Hero catégorie ── */}
-      <section className="relative bg-black overflow-hidden min-h-[260px] sm:min-h-[380px] md:min-h-[460px]">
-        {heroArticle?.imageUrl && (
-          <div className="absolute inset-0">
+      {heroArticle?.imageClean ? (
+        /* Image propre : image entière responsive + bouton dessous */
+        <section className="bg-black">
+          {heroArticle.imageUrl && (
             <Image
               src={heroArticle.imageUrl}
               alt={heroArticle.titre}
-              fill
-              priority
-              className="object-cover object-top opacity-90"
+              width={0}
+              height={0}
               sizes="100vw"
+              priority
+              style={{ width: "100%", height: "auto", display: "block" }}
             />
+          )}
+          <div className="container-site py-5 flex items-center gap-4">
+            <div className="inline-flex items-center px-3 py-1.5 self-start" style={{ backgroundColor: categorie.couleur }}>
+              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white">{categorie.nom}</span>
+            </div>
+            <Link
+              href={`/${catSlug}/${heroArticle.slug}`}
+              className="inline-flex items-center px-5 py-3 bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors"
+            >
+              Lire l&apos;article
+            </Link>
           </div>
-        )}
-        {!heroArticle?.imageClean && (
+        </section>
+      ) : (
+        /* Hero normal : image en fond avec texte en overlay */
+        <section className="relative bg-black overflow-hidden min-h-[260px] sm:min-h-[380px] md:min-h-[460px]">
+          {heroArticle?.imageUrl && (
+            <div className="absolute inset-0">
+              <Image
+                src={heroArticle.imageUrl}
+                alt={heroArticle.titre}
+                fill
+                priority
+                className="object-cover object-top opacity-90"
+                sizes="100vw"
+              />
+            </div>
+          )}
           <div className="absolute inset-0" style={{
             background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.30) 50%, rgba(0,0,0,0.05) 100%)"
           }} />
-        )}
-
-        <div className="container-site relative z-10 flex flex-col justify-end min-h-[260px] sm:min-h-[380px] md:min-h-[460px] px-5 sm:px-8 pb-7 sm:pb-12 pt-6">
-          {/* Badge catégorie */}
-          <div className="inline-flex items-center px-3 py-1.5 mb-3 self-start" style={{ backgroundColor: categorie.couleur }}>
-            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white">
-              {categorie.nom}
-            </span>
-          </div>
-
-          {heroArticle ? (
-            heroArticle.imageClean ? (
-              /* Image propre : juste le bouton */
-              <Link
-                href={`/${catSlug}/${heroArticle.slug}`}
-                className="inline-flex items-center px-5 py-3 bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors w-full sm:w-auto justify-center sm:justify-start"
-              >
-                Lire l&apos;article
-              </Link>
+          <div className="container-site relative z-10 flex flex-col justify-end min-h-[260px] sm:min-h-[380px] md:min-h-[460px] px-5 sm:px-8 pb-7 sm:pb-12 pt-6">
+            <div className="inline-flex items-center px-3 py-1.5 mb-3 self-start" style={{ backgroundColor: categorie.couleur }}>
+              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white">{categorie.nom}</span>
+            </div>
+            {heroArticle ? (
+              <div className="max-w-[520px]">
+                <h1 className="text-white font-black leading-[1.05] tracking-tight mb-2 sm:mb-4" style={{ fontSize: "clamp(20px, 4vw, 44px)" }}>
+                  {heroArticle.titre}
+                </h1>
+                {heroArticle.chapo && (
+                  <p className="text-white/75 text-[13px] sm:text-[15px] leading-relaxed mb-4 line-clamp-2 hidden sm:block">
+                    {heroArticle.chapo}
+                  </p>
+                )}
+                <Link href={`/${catSlug}/${heroArticle.slug}`}
+                  className="inline-flex items-center px-5 py-3 bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors w-full sm:w-auto justify-center sm:justify-start">
+                  Lire l&apos;article
+                </Link>
+              </div>
             ) : (
-            /* Article en une avec texte */
-            <div className="max-w-[520px]">
-              <h1
-                className="text-white font-black leading-[1.05] tracking-tight mb-2 sm:mb-4"
-                style={{ fontSize: "clamp(20px, 4vw, 44px)" }}
-              >
-                {heroArticle.titre}
-              </h1>
-              {heroArticle.chapo && (
-                <p className="text-white/75 text-[13px] sm:text-[15px] leading-relaxed mb-4 line-clamp-2 hidden sm:block">
-                  {heroArticle.chapo}
-                </p>
-              )}
-              <Link
-                href={`/${catSlug}/${heroArticle.slug}`}
-                className="inline-flex items-center px-5 py-3 bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors w-full sm:w-auto justify-center sm:justify-start"
-              >
-                Lire l&apos;article
-              </Link>
-            </div>
-            )
-          ) : (
-            /* Fallback si aucun article */
-            <div className="max-w-[520px]">
-              <h1
-                className="text-white font-black leading-tight tracking-tight mb-2"
-                style={{ fontSize: "clamp(20px, 4vw, 44px)" }}
-              >
-                {getHeroTitle(catSlug)}
-              </h1>
-              <p className="text-white/70 text-[14px] hidden sm:block">{getHeroSubtitle(catSlug)}</p>
-            </div>
-          )}
-        </div>
-      </section>
+              <div className="max-w-[520px]">
+                <h1 className="text-white font-black leading-tight tracking-tight mb-2" style={{ fontSize: "clamp(20px, 4vw, 44px)" }}>
+                  {getHeroTitle(catSlug)}
+                </h1>
+                <p className="text-white/70 text-[14px] hidden sm:block">{getHeroSubtitle(catSlug)}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── Sous-navigation ── */}
       <SubCategoryNav items={sousCats} current={sous || "Tout"} catSlug={catSlug} couleur={categorie.couleur} />
