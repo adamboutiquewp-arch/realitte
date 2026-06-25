@@ -27,8 +27,9 @@ export default function HeroSection({ article }: HeroSectionProps) {
       )}
       {!article.imageClean && <div className="absolute inset-0 hero-overlay" />}
 
+
       <div className="relative z-10 flex flex-col justify-end min-h-[300px] sm:min-h-[460px] md:min-h-[540px] px-5 sm:px-8 md:px-10 py-7 sm:py-12 md:py-16">
-        {article.imageClean ? (
+        {article.imageClean === true ? (
           /* Image propre : juste le bouton en bas */
           <div>
             <Link

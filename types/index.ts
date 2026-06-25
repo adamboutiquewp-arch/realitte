@@ -43,13 +43,13 @@ export interface ArticleCard
     | "chapo"
     | "imageUrl"
     | "imageAlt"
-    | "imageClean"
     | "sousCategorie"
     | "tags"
     | "datePublication"
     | "tempsLecture"
     | "vues"
   > {
+  imageClean?: boolean;
   categorie: Pick<Categorie, "nom" | "slug" | "couleur">;
 }
 
