@@ -1,11 +1,23 @@
-import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+
+const TZ = "Europe/Paris";
+
+function parisDateStr(date: Date | string): string {
+  return new Date(date).toLocaleDateString("fr-FR", { timeZone: TZ });
+}
 
 export function formatDate(date: Date | string): string {
   const d = new Date(date);
-  if (isToday(d)) return format(d, "HH:mm");
-  if (isYesterday(d)) return "Hier";
-  return format(d, "d MMMM yyyy", { locale: fr });
+  const dateStr = parisDateStr(d);
+  const todayStr = parisDateStr(new Date());
+  const yesterdayStr = parisDateStr(new Date(Date.now() - 86_400_000));
+
+  if (dateStr === todayStr) {
+    return d.toLocaleTimeString("fr-FR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+  }
+  if (dateStr === yesterdayStr) return "Hier";
+  return d.toLocaleDateString("fr-FR", { timeZone: TZ, day: "numeric", month: "long", year: "numeric" });
 }
 
 export function formatDateRelative(date: Date | string): string {
@@ -13,11 +25,11 @@ export function formatDateRelative(date: Date | string): string {
 }
 
 export function formatHeure(date: Date | string): string {
-  return format(new Date(date), "HH:mm");
+  return new Date(date).toLocaleTimeString("fr-FR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
 }
 
 export function formatDateFull(date: Date | string): string {
-  return format(new Date(date), "d MMMM yyyy", { locale: fr });
+  return new Date(date).toLocaleDateString("fr-FR", { timeZone: TZ, day: "numeric", month: "long", year: "numeric" });
 }
 
 export function tempsLectureLabel(minutes: number | null): string {
