@@ -194,7 +194,7 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                           />
                         )}
                         {a.statut === "PUBLISHED" && (
-                          <FacebookPostButton articleId={a.id} variant="list" />
+                          <FacebookPostButton article={{ id: a.id, titre: a.titre, chapo: a.chapo, imageUrl: a.imageUrl, slug: a.slug, tags: a.tags, categorie: { slug: a.categorie.slug } }} variant="list" />
                         )}
                         {a.statut === "PUBLISHED" && (
                           <Link
