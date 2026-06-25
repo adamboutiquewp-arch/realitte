@@ -220,22 +220,27 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
               )}
 
               {/* Boutons action */}
-              {(network === "facebook" || network === "instagram") && postState !== "success" ? (
-                <div className="space-y-2">
-                  <button
-                    onClick={publishDirect}
-                    disabled={postState === "loading"}
-                    className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-                    style={{ backgroundColor: activeNet.color }}
-                  >
-                    {activeNet.icon}
-                    {postState === "loading" ? "Publication en cours…" : `Publier directement sur ${activeNet.label}`}
-                  </button>
-                  {network === "instagram" && !article.imageUrl && (
-                    <p className="text-[11px] text-amber-600 text-center">⚠ Instagram nécessite une image — ajoute une photo à l&apos;article d&apos;abord</p>
-                  )}
-                </div>
-              ) : network === "tiktok" ? (
+              {network === "facebook" && (
+                <button
+                  onClick={() => { copyOnly(); window.open("https://business.facebook.com/latest/composer/", "_blank"); }}
+                  className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                  style={{ backgroundColor: activeNet.color }}
+                >
+                  {activeNet.icon}
+                  Copier &amp; Ouvrir Meta Business Suite
+                </button>
+              )}
+              {network === "instagram" && (
+                <button
+                  onClick={() => { copyOnly(); window.open("https://business.facebook.com/latest/composer/", "_blank"); }}
+                  className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                  style={{ backgroundColor: activeNet.color }}
+                >
+                  {activeNet.icon}
+                  Copier &amp; Ouvrir Meta Business Suite
+                </button>
+              )}
+              {network === "tiktok" && (
                 <button
                   onClick={() => { copyOnly(); window.open("https://www.tiktok.com/upload", "_blank"); }}
                   className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
@@ -244,7 +249,8 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
                   {activeNet.icon}
                   Copier &amp; Ouvrir TikTok
                 </button>
-              ) : network === "x" ? (
+              )}
+              {network === "x" && (
                 <button
                   onClick={() => {
                     const url = `${SITE_URL}/${article.categorie.slug}/${article.slug}`;
@@ -256,7 +262,7 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
                   {activeNet.icon}
                   Publier sur X
                 </button>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
