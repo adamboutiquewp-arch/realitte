@@ -25,34 +25,44 @@ export default function HeroSection({ article }: HeroSectionProps) {
           />
         </div>
       )}
-      <div className="absolute inset-0 hero-overlay" />
+      {!article.imageClean && <div className="absolute inset-0 hero-overlay" />}
 
       <div className="relative z-10 flex flex-col justify-end min-h-[300px] sm:min-h-[460px] md:min-h-[540px] px-5 sm:px-8 md:px-10 py-7 sm:py-12 md:py-16">
-        <div className="w-full max-w-[460px]">
-          <div className="inline-flex items-center px-3 py-1.5 bg-[#C9A84C] mb-3 sm:mb-5">
-            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-black">
-              À la une
-            </span>
+        {article.imageClean ? (
+          /* Image propre : juste le bouton en bas */
+          <div>
+            <Link
+              href={href}
+              className="inline-flex items-center justify-center px-6 sm:px-8 py-3.5 bg-white text-black text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors duration-200"
+            >
+              Lire l&apos;article
+            </Link>
           </div>
-
-          <h1
-            className="text-white font-black leading-[1.05] tracking-tight mb-3 sm:mb-5"
-            style={{ fontSize: "clamp(24px, 5vw, 52px)" }}
-          >
-            {article.titre}
-          </h1>
-
-          <p className="text-white/70 text-[13px] sm:text-[15px] leading-relaxed mb-4 sm:mb-8 line-clamp-2">
-            {article.chapo}
-          </p>
-
-          <Link
-            href={href}
-            className="inline-flex items-center justify-center w-full sm:w-auto px-6 sm:px-8 py-3.5 bg-white text-black text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors duration-200"
-          >
-            Lire l&apos;article
-          </Link>
-        </div>
+        ) : (
+          /* Image normale : titre + chapô + bouton */
+          <div className="w-full max-w-[460px]">
+            <div className="inline-flex items-center px-3 py-1.5 bg-[#C9A84C] mb-3 sm:mb-5">
+              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-black">
+                À la une
+              </span>
+            </div>
+            <h1
+              className="text-white font-black leading-[1.05] tracking-tight mb-3 sm:mb-5"
+              style={{ fontSize: "clamp(24px, 5vw, 52px)" }}
+            >
+              {article.titre}
+            </h1>
+            <p className="text-white/70 text-[13px] sm:text-[15px] leading-relaxed mb-4 sm:mb-8 line-clamp-2">
+              {article.chapo}
+            </p>
+            <Link
+              href={href}
+              className="inline-flex items-center justify-center w-full sm:w-auto px-6 sm:px-8 py-3.5 bg-white text-black text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] hover:text-white transition-colors duration-200"
+            >
+              Lire l&apos;article
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

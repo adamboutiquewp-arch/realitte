@@ -29,6 +29,7 @@ export interface Article {
   vues: number;
   tempsLecture: number | null;
   featured: boolean;
+  imageClean: boolean;
   dateCreation: Date | string;
   datePublication: Date | string | null;
 }
@@ -42,6 +43,7 @@ export interface ArticleCard
     | "chapo"
     | "imageUrl"
     | "imageAlt"
+    | "imageClean"
     | "sousCategorie"
     | "tags"
     | "datePublication"

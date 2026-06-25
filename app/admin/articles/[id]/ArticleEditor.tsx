@@ -30,6 +30,7 @@ interface Article {
   metaTitle: string | null;
   metaDescription: string | null;
   featured: boolean;
+  imageClean: boolean;
   dateCreation: string;
   datePublication: string | null;
   categorie: Categorie;
@@ -56,6 +57,7 @@ export default function ArticleEditor({ article, categories }: Props) {
     metaTitle: article.metaTitle || "",
     metaDescription: article.metaDescription || "",
     featured: article.featured,
+    imageClean: article.imageClean,
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -387,6 +389,15 @@ export default function ArticleEditor({ article, categories }: Props) {
                 onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
                 className="w-4 h-4 accent-[#E53935]" />
               <span className="text-[13px] font-medium">Article hero (featured)</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer p-3 bg-amber-50 border border-amber-200">
+              <input type="checkbox" checked={form.imageClean}
+                onChange={(e) => setForm((f) => ({ ...f, imageClean: e.target.checked }))}
+                className="w-4 h-4 accent-amber-500 flex-shrink-0" />
+              <div>
+                <span className="text-[13px] font-bold text-amber-800">Image propre — sans texte dessus</span>
+                <p className="text-[11px] text-amber-600 mt-0.5">Le titre et la catégorie n&apos;apparaîtront pas sur l&apos;image (ni sur l&apos;accueil, ni sur la page article)</p>
+              </div>
             </label>
           </div>
         </div>

@@ -145,40 +145,67 @@ export default async function ArticlePage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ── Image bannière — affichée en entier, sans texte dessus ── */}
-      {article.imageUrl && (
-        <div className="w-full bg-black">
-          <Image
-            src={article.imageUrl}
-            alt={article.imageAlt || article.titre}
-            width={1200}
-            height={460}
-            priority
-            className="w-full h-auto block"
-            sizes="100vw"
-          />
+      {/* ── Hero article ── */}
+      {article.imageClean ? (
+        /* Image propre : image complète + titre DESSOUS */
+        <>
+          {article.imageUrl && (
+            <div className="w-full bg-black">
+              <Image
+                src={article.imageUrl}
+                alt={article.imageAlt || article.titre}
+                width={1200}
+                height={460}
+                priority
+                className="w-full h-auto block"
+                sizes="100vw"
+              />
+            </div>
+          )}
+          <div className="bg-[#111] text-white">
+            <div className="container-site py-5 md:py-7">
+              <Link href={`/${article.categorie.slug}`} className="inline-block mb-2 md:mb-3">
+                <span className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase px-3 py-1"
+                  style={{ backgroundColor: article.categorie.couleur, color: "#fff" }}>
+                  {article.categorie.nom}
+                </span>
+              </Link>
+              <h1 className="text-white text-[22px] sm:text-3xl md:text-4xl font-black leading-tight max-w-3xl"
+                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+                {article.titre}
+              </h1>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Image normale : titre en overlay sur l'image */
+        <div className="relative bg-black" style={{ height: "min(48vh, 460px)" }}>
+          {article.imageUrl && (
+            <Image
+              src={article.imageUrl}
+              alt={article.imageAlt || article.titre}
+              fill
+              priority
+              className="object-cover opacity-70"
+              style={{ objectPosition: "center 20%" }}
+              sizes="100vw"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 container-site pb-5 md:pb-8">
+            <Link href={`/${article.categorie.slug}`} className="inline-block mb-2 md:mb-3">
+              <span className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase px-3 py-1"
+                style={{ color: "#fff", backgroundColor: article.categorie.couleur }}>
+                {article.categorie.nom}
+              </span>
+            </Link>
+            <h1 className="text-white text-[22px] sm:text-3xl md:text-4xl font-black leading-tight max-w-3xl"
+              style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+              {article.titre}
+            </h1>
+          </div>
         </div>
       )}
-
-      {/* ── Titre et catégorie sous l'image ── */}
-      <div className="bg-[#111] text-white">
-        <div className="container-site py-5 md:py-7">
-          <Link href={`/${article.categorie.slug}`} className="inline-block mb-2 md:mb-3">
-            <span
-              className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase px-3 py-1"
-              style={{ backgroundColor: article.categorie.couleur, color: "#fff" }}
-            >
-              {article.categorie.nom}
-            </span>
-          </Link>
-          <h1
-            className="text-white text-[22px] sm:text-3xl md:text-4xl font-black leading-tight max-w-3xl"
-            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-          >
-            {article.titre}
-          </h1>
-        </div>
-      </div>
 
       {/* ── Corps ── */}
       <div className="container-site py-8 md:py-12">

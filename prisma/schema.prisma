@@ -70,6 +70,7 @@ model Article {
   metaDescription String?
   featured          Boolean       @default(false)
   featuredCategorie Boolean       @default(false)
+  imageClean        Boolean       @default(false)
   dateCreation    DateTime      @default(now())
   datePublication DateTime?
   avis            Avis[]

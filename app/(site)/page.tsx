@@ -66,6 +66,7 @@ function mapToCard(a: {
   chapo: string;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageClean: boolean;
   sousCategorie: string | null;
   tags: string[];
   datePublication: Date | null;
@@ -80,6 +81,7 @@ function mapToCard(a: {
     chapo: a.chapo,
     imageUrl: a.imageUrl,
     imageAlt: a.imageAlt,
+    imageClean: a.imageClean,
     sousCategorie: a.sousCategorie,
     tags: a.tags,
     datePublication: a.datePublication,
