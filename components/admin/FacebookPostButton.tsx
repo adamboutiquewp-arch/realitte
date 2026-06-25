@@ -10,6 +10,7 @@ interface Article {
   chapo: string;
   slug: string;
   tags: string[];
+  imageUrl?: string | null;
   categorie: { slug: string };
 }
 
@@ -126,9 +127,38 @@ export default function FacebookPostButton({ article, variant = "list" }: Props)
                 />
               </div>
 
+              {/* Photo */}
+              {article.imageUrl && (
+                <div>
+                  <p className="text-[11px] font-bold tracking-widest uppercase text-[#424242] mb-2">
+                    Photo de l&apos;article
+                  </p>
+                  <div className="relative group border border-[#E0E0E0] overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={article.imageUrl}
+                      alt={article.titre}
+                      className="w-full h-36 object-cover"
+                    />
+                    <a
+                      href={article.imageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download
+                      className="absolute inset-0 bg-black/50 text-white text-[12px] font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
+                    >
+                      ⬇ Ouvrir la photo pour la télécharger
+                    </a>
+                  </div>
+                  <p className="text-[11px] text-[#999] mt-1">
+                    Survole la photo → clique pour l&apos;ouvrir → clic droit → Enregistrer
+                  </p>
+                </div>
+              )}
+
               {/* Info */}
               <div className="px-3 py-2.5 bg-[#E7F3FF] border border-[#C3D9F5] text-[12px] text-[#1877F2]">
-                Le texte sera copié automatiquement — colle-le avec <strong>Ctrl+V</strong> dans Meta Business Suite et choisis <strong>Facebook + Instagram</strong>
+                <strong>Flow :</strong> Copie le texte → ouvre Meta Business Suite → colle → supprime l&apos;aperçu lien → ajoute la photo → publie sur <strong>Facebook + Instagram</strong>
               </div>
 
               {/* Actions */}
