@@ -151,11 +151,11 @@ export default async function ArticlePage({ params }: PageProps) {
           <Image
             src={article.imageUrl}
             alt={article.imageAlt || article.titre}
-            width={1200}
-            height={460}
-            priority
-            className="w-full h-auto block"
+            width={0}
+            height={0}
             sizes="100vw"
+            priority
+            style={{ width: "100%", height: "auto", display: "block" }}
           />
         </div>
       )}
