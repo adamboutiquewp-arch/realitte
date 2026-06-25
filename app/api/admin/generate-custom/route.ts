@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  const { sujet, categorieSlugHint, useWebSearch, imageUrl } = await req.json();
+  const { sujet, categorieSlugHint, useWebSearch, imageUrl, imageClean } = await req.json();
 
   // En mode photo, le sujet est optionnel. En mode texte, il est requis.
   if (!imageUrl && !sujet?.trim()) {
@@ -233,6 +233,7 @@ ${jsonSchema}`;
         tempsLecture: Math.max(1, Math.ceil(wordCount / 200)),
         imageUrl: finalImageUrl,
         imageAlt: finalImageAlt,
+        imageClean: imageClean === true,
       },
     });
 

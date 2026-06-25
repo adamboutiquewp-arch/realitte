@@ -26,6 +26,7 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
   const [sujet, setSujet] = useState("");
   const [categorieSlug, setCategorieSlug] = useState("");
   const [useWebSearch, setUseWebSearch] = useState(true);
+  const [imageClean, setImageClean] = useState(false);
   const [state, setState] = useState<"idle" | "uploading" | "loading" | "ok" | "error">("idle");
   const [result, setResult] = useState<{ articleId: string; titre: string; slug: string; webSearchUsed?: boolean } | null>(null);
   const [error, setError] = useState("");
@@ -78,6 +79,7 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
           categorieSlugHint: categorieSlug || undefined,
           useWebSearch: mode === "sujet" ? useWebSearch : false,
           imageUrl: mode === "photo" ? uploadedImageUrl : undefined,
+          imageClean,
         }),
       });
       const data = await res.json();
@@ -271,6 +273,16 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
               <p className="text-[11px] text-purple-500 mt-0.5">Il va reconnaître le contenu, les personnes, le contexte — et écrire un article qui correspond exactement à la photo</p>
             </div>
           )}
+
+          {/* Image propre */}
+          <label className="flex items-center gap-3 cursor-pointer p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <input type="checkbox" checked={imageClean} onChange={(e) => setImageClean(e.target.checked)}
+              className="w-4 h-4 accent-amber-500 flex-shrink-0" />
+            <div>
+              <p className="text-[12px] font-bold text-amber-800">Image propre — sans texte dessus</p>
+              <p className="text-[11px] text-amber-600 mt-0.5">L&apos;image s&apos;affichera sans titre ni texte en accueil</p>
+            </div>
+          </label>
 
           {/* Bouton */}
           <div className="pt-1">
