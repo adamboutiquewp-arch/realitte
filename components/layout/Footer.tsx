@@ -152,9 +152,6 @@ export default async function Footer() {
             © {year} Réalitte. Tous droits réservés.
           </p>
           <InstallButton />
-          <p className="text-[11px] text-[#424242]">
-            Contenu généré avec assistance IA · Sources vérifiées
-          </p>
         </div>
       </div>
     </footer>
