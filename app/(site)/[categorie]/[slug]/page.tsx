@@ -145,25 +145,28 @@ export default async function ArticlePage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ── Hero image ── */}
-      <div className="relative bg-black" style={{ height: "min(48vh, 460px)" }}>
-        {article.imageUrl && (
+      {/* ── Image bannière — affichée en entier, sans texte dessus ── */}
+      {article.imageUrl && (
+        <div className="w-full bg-black">
           <Image
             src={article.imageUrl}
             alt={article.imageAlt || article.titre}
-            fill
+            width={1200}
+            height={460}
             priority
-            className="object-cover opacity-70"
-            style={{ objectPosition: "center 20%" }}
+            className="w-full h-auto block"
             sizes="100vw"
           />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 container-site pb-5 md:pb-8">
+        </div>
+      )}
+
+      {/* ── Titre et catégorie sous l'image ── */}
+      <div className="bg-[#111] text-white">
+        <div className="container-site py-5 md:py-7">
           <Link href={`/${article.categorie.slug}`} className="inline-block mb-2 md:mb-3">
             <span
               className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase px-3 py-1"
-              style={{ color: "#fff", backgroundColor: article.categorie.couleur }}
+              style={{ backgroundColor: article.categorie.couleur, color: "#fff" }}
             >
               {article.categorie.nom}
             </span>
