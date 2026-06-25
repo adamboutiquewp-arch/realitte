@@ -39,9 +39,6 @@ export default function FacebookPostButton({ article, variant = "list" }: Props)
   const [text, setText] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const articleUrl = `${SITE_URL}/${article.categorie.slug}/${article.slug}`;
-  const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`;
-
   const openModal = () => {
     setText(buildText(article));
     setCopied(false);
@@ -55,7 +52,7 @@ export default function FacebookPostButton({ article, variant = "list" }: Props)
     } catch {
       // fallback si clipboard bloqué
     }
-    window.open(shareUrl, "_blank", "width=620,height=500");
+    window.open("https://business.facebook.com/latest/composer/", "_blank");
   };
 
   const copyOnly = async () => {
@@ -131,7 +128,7 @@ export default function FacebookPostButton({ article, variant = "list" }: Props)
 
               {/* Info */}
               <div className="px-3 py-2.5 bg-[#E7F3FF] border border-[#C3D9F5] text-[12px] text-[#1877F2]">
-                Le texte sera copié automatiquement — colle-le dans Facebook avec <strong>Ctrl+V</strong>
+                Le texte sera copié automatiquement — colle-le avec <strong>Ctrl+V</strong> dans Meta Business Suite et choisis <strong>Facebook + Instagram</strong>
               </div>
 
               {/* Actions */}
@@ -147,7 +144,7 @@ export default function FacebookPostButton({ article, variant = "list" }: Props)
                   className="px-6 py-2.5 bg-[#1877F2] text-white text-[12px] font-bold uppercase tracking-widest hover:bg-[#166FE5] transition-colors flex items-center gap-2"
                 >
                   <FacebookIcon size={14} />
-                  Copier &amp; Ouvrir Facebook
+                  Copier &amp; Ouvrir Meta Business Suite
                 </button>
               </div>
             </div>
