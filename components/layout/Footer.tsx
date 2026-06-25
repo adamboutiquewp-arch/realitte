@@ -14,6 +14,7 @@ const NAV_COL2 = [
   { label: "Créateurs",     href: "/createurs" },
   { label: "Entrepreneurs", href: "/entrepreneurs" },
   { label: "À propos",      href: "/a-propos" },
+  { label: "Partenaires",   href: "/partenaires" },
 ];
 
 const SOCIAL_DEFAULTS = [
