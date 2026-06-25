@@ -16,8 +16,9 @@ const RESEAUX = [
 ];
 
 const FACEBOOK_API = [
-  { cle: "facebook_page_id",    label: "Page ID Facebook",    placeholder: "123456789012345", type: "text" },
-  { cle: "facebook_page_token", label: "Page Access Token Facebook", placeholder: "EAABs…", type: "password" },
+  { cle: "facebook_page_id",      label: "Page ID Facebook",           placeholder: "1163796830151892", type: "text" },
+  { cle: "facebook_page_token",   label: "Page Access Token Facebook", placeholder: "EAABs…",          type: "password" },
+  { cle: "instagram_user_id",     label: "Instagram Business Account ID", placeholder: "17841400000000000", type: "text" },
 ];
 
 async function saveConfig(formData: FormData) {

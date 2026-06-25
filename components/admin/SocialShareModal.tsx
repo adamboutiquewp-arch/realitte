@@ -48,13 +48,10 @@ function buildText(article: Article, network: Network): string {
   switch (network) {
     case "facebook":
       return [article.titre, "", article.chapo, "", `👉 ${url}`, hashtags5 ? `\n${hashtags5}` : ""].join("\n").trim();
-
     case "instagram":
       return [article.titre, "", article.chapo, "", "🔗 Lien en bio", hashtags15 ? `\n.\n.\n.\n${hashtags15}` : ""].join("\n").trim();
-
     case "tiktok":
       return [`${article.titre} 🔥`, "", article.chapo.slice(0, 150) + (article.chapo.length > 150 ? "..." : ""), "", hashtags5].join("\n").trim();
-
     case "x": {
       const short = article.chapo.slice(0, 200);
       const tags = article.tags.slice(0, 3).map((t) => `#${t.replace(/\s+/g, "")}`).join(" ");
@@ -63,25 +60,15 @@ function buildText(article: Article, network: Network): string {
   }
 }
 
-function getAction(network: Network, article: Article, text: string) {
-  const url = `${SITE_URL}/${article.categorie.slug}/${article.slug}`;
-  switch (network) {
-    case "facebook":
-      return { label: "Copier & Ouvrir Meta Business Suite", open: () => window.open("https://business.facebook.com/latest/composer/", "_blank") };
-    case "instagram":
-      return { label: "Copier & Ouvrir Instagram", open: () => window.open("https://www.instagram.com/", "_blank") };
-    case "tiktok":
-      return { label: "Copier & Ouvrir TikTok", open: () => window.open("https://www.tiktok.com/upload", "_blank") };
-    case "x":
-      return { label: "Publier sur X", open: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "width=600,height=400") };
-  }
-}
+type PostState = "idle" | "loading" | "success" | "error";
 
 export default function SocialShareModal({ article, variant = "list" }: Props) {
   const [open, setOpen] = useState(false);
   const [network, setNetwork] = useState<Network>("facebook");
   const [texts, setTexts] = useState<Record<Network, string>>({ facebook: "", instagram: "", tiktok: "", x: "" });
   const [copied, setCopied] = useState(false);
+  const [postState, setPostState] = useState<PostState>("idle");
+  const [postError, setPostError] = useState("");
 
   const openModal = () => {
     setTexts({
@@ -92,22 +79,43 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
     });
     setNetwork("facebook");
     setCopied(false);
+    setPostState("idle");
+    setPostError("");
     setOpen(true);
   };
 
   const currentText = texts[network];
-  const action = getAction(network, article, currentText);
   const activeNet = NETWORKS.find((n) => n.id === network)!;
-
-  const copyAndOpen = async () => {
-    if (network !== "x") {
-      try { await navigator.clipboard.writeText(currentText); setCopied(true); } catch {}
-    }
-    action.open();
-  };
 
   const copyOnly = async () => {
     try { await navigator.clipboard.writeText(currentText); setCopied(true); setTimeout(() => setCopied(false), 3000); } catch {}
+  };
+
+  const publishDirect = async () => {
+    setPostState("loading");
+    setPostError("");
+    try {
+      const res = await fetch("/api/admin/facebook/post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          articleId: article.id,
+          message: currentText,
+          imageUrl: article.imageUrl || null,
+          network,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setPostError(data.error || "Erreur inconnue");
+        setPostState("error");
+      } else {
+        setPostState("success");
+      }
+    } catch {
+      setPostError("Erreur réseau");
+      setPostState("error");
+    }
   };
 
   return (
@@ -135,12 +143,12 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
               <button onClick={() => setOpen(false)} className="text-[#999] hover:text-black text-[22px] leading-none">×</button>
             </div>
 
-            {/* Onglets réseaux */}
+            {/* Onglets */}
             <div className="flex border-b border-[#E0E0E0]">
               {NETWORKS.map((n) => (
                 <button
                   key={n.id}
-                  onClick={() => { setNetwork(n.id); setCopied(false); }}
+                  onClick={() => { setNetwork(n.id); setCopied(false); setPostState("idle"); setPostError(""); }}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[12px] font-bold transition-colors border-b-2 ${
                     network === n.id ? "border-current" : "border-transparent text-[#999] hover:text-[#555]"
                   }`}
@@ -189,7 +197,6 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
                   onChange={(e) => setTexts((t) => ({ ...t, [network]: e.target.value }))}
                   rows={9}
                   className="w-full px-3 py-3 border border-[#E0E0E0] text-[13px] outline-none resize-none"
-                  style={{ borderColor: network !== "x" ? "#E0E0E0" : "#000" }}
                 />
                 {network === "x" && (
                   <p className={`text-[11px] mt-1 ${currentText.length > 280 ? "text-red-500 font-bold" : "text-[#999]"}`}>
@@ -198,29 +205,58 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
                 )}
               </div>
 
-              {/* Infos par réseau */}
-              {network === "facebook" && (
-                <p className="text-[11px] text-[#999]">Le texte sera copié → colle dans Meta Business Suite → sélectionne Facebook + Instagram</p>
-              )}
-              {network === "instagram" && (
-                <p className="text-[11px] text-[#999]">Télécharge la photo → copie le texte → ouvre Instagram → ajoute la photo et colle le texte</p>
-              )}
-              {network === "tiktok" && (
-                <p className="text-[11px] text-[#999]">Texte court et percutant adapté TikTok. Télécharge la photo si besoin.</p>
-              )}
-              {network === "x" && (
-                <p className="text-[11px] text-[#999]">Le texte sera pré-rempli automatiquement dans X — tu n&apos;as qu&apos;à publier.</p>
+              {/* Erreur API */}
+              {postState === "error" && (
+                <div className="px-3 py-2.5 bg-red-50 border border-red-200 text-[12px] text-red-600 font-medium">
+                  ✗ {postError}
+                </div>
               )}
 
-              {/* Bouton action */}
-              <button
-                onClick={copyAndOpen}
-                className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
-                style={{ backgroundColor: activeNet.color }}
-              >
-                {activeNet.icon}
-                {action.label}
-              </button>
+              {/* Succès */}
+              {postState === "success" && (
+                <div className="px-3 py-2.5 bg-green-50 border border-green-200 text-[12px] text-green-700 font-bold">
+                  ✓ Publié sur {activeNet.label} avec succès !
+                </div>
+              )}
+
+              {/* Boutons action */}
+              {(network === "facebook" || network === "instagram") && postState !== "success" ? (
+                <div className="space-y-2">
+                  <button
+                    onClick={publishDirect}
+                    disabled={postState === "loading"}
+                    className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                    style={{ backgroundColor: activeNet.color }}
+                  >
+                    {activeNet.icon}
+                    {postState === "loading" ? "Publication en cours…" : `Publier directement sur ${activeNet.label}`}
+                  </button>
+                  {network === "instagram" && !article.imageUrl && (
+                    <p className="text-[11px] text-amber-600 text-center">⚠ Instagram nécessite une image — ajoute une photo à l&apos;article d&apos;abord</p>
+                  )}
+                </div>
+              ) : network === "tiktok" ? (
+                <button
+                  onClick={() => { copyOnly(); window.open("https://www.tiktok.com/upload", "_blank"); }}
+                  className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                  style={{ backgroundColor: activeNet.color }}
+                >
+                  {activeNet.icon}
+                  Copier &amp; Ouvrir TikTok
+                </button>
+              ) : network === "x" ? (
+                <button
+                  onClick={() => {
+                    const url = `${SITE_URL}/${article.categorie.slug}/${article.slug}`;
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(currentText)}&url=${encodeURIComponent(url)}`, "_blank", "width=600,height=400");
+                  }}
+                  className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                  style={{ backgroundColor: activeNet.color }}
+                >
+                  {activeNet.icon}
+                  Publier sur X
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
