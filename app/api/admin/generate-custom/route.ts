@@ -109,16 +109,19 @@ export async function POST(req: Request) {
   "photoQuery": "Mot-clé pour chercher une photo (si besoin d'une autre image)"
 }`;
 
-  let response;
+  const webSearchUsed = !imageUrl && !!useWebSearch;
 
-  if (imageUrl) {
-    // Mode PHOTO — Claude analyse l'image et génère un article basé sur ce qu'il voit
-    const photoPrompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
+  try {
+    let response;
+
+    if (imageUrl) {
+      // Mode PHOTO — Claude analyse l'image via vision
+      const photoPrompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
 Nous sommes le ${today}.
 
 Analyse cette photo avec attention : identifie les personnes, le lieu, le contexte, l'événement ou le sujet représenté.${sujet ? `\nIndice supplémentaire donné par l'admin : "${sujet}"` : ""}
 
-Ensuite rédige un article complet de 400 à 600 mots qui correspond exactement au contenu de cette photo. L'article doit parler de ce qui est visible sur la photo.
+Ensuite rédige un article complet de 400 à 600 mots qui correspond exactement au contenu de cette photo.
 
 Règles :
 - Contenu factuel, ton journalistique engagé
@@ -129,52 +132,54 @@ Règles :
 Structure JSON exacte :
 ${jsonSchema}`;
 
-    response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 3000,
-      messages: [{
-        role: "user",
-        content: [
-          { type: "image", source: { type: "url", url: imageUrl } },
-          { type: "text", text: photoPrompt },
-        ],
-      }],
-    });
-  } else {
-    // Mode SUJET — comportement normal avec recherche web optionnelle
-    let webContext = "";
-    if (useWebSearch) {
-      webContext = await searchWeb(sujet.trim());
-    }
+      // Télécharge l'image et l'envoie en base64 pour compatibilité maximale
+      const imgRes = await fetch(imageUrl);
+      if (!imgRes.ok) throw new Error("Impossible de charger l'image uploadée");
+      const imgBuffer = await imgRes.arrayBuffer();
+      const imgBase64 = Buffer.from(imgBuffer).toString("base64");
+      const contentType = imgRes.headers.get("content-type") || "image/jpeg";
+      const mediaType = (["image/jpeg","image/png","image/gif","image/webp"].includes(contentType) ? contentType : "image/jpeg") as "image/jpeg"|"image/png"|"image/gif"|"image/webp";
 
-    const contextBlock = webContext
-      ? `\n\nVoici des informations récentes trouvées sur internet sur ce sujet. Utilise ces faits réels pour écrire l'article :\n\n${webContext}\n\nIMPORTANT: Utilise ces informations réelles. Ne les invente pas, ne les modifie pas.`
-      : "";
+      response = await anthropic.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 3000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mediaType, data: imgBase64 } },
+            { type: "text", text: photoPrompt },
+          ],
+        }],
+      });
+    } else {
+      // Mode SUJET — recherche web optionnelle
+      let webContext = "";
+      if (useWebSearch) webContext = await searchWeb(sujet.trim());
 
-    const prompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
-Nous sommes le ${today}. Base-toi sur cette date pour tous les calculs de temps (échéances, délais, anniversaires, mandats, etc.).
+      const contextBlock = webContext
+        ? `\n\nVoici des informations récentes trouvées sur internet. Utilise ces faits réels :\n\n${webContext}\n\nIMPORTANT: Utilise ces informations réelles, ne les invente pas.`
+        : "";
+
+      const prompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
+Nous sommes le ${today}. Base-toi sur cette date pour tous les calculs de temps.
 Rédige un article complet et original sur le sujet suivant : "${sujet}"${contextBlock}
 
 Règles :
 - Contenu factuel, bien documenté, ton journalistique engagé
 - Longueur : 400 à 600 mots dans le corps de l'article
-- Formate le contenu en HTML simple (balises p, h2, h3, blockquote uniquement)
+- HTML simple uniquement (p, h2, h3, blockquote)
 - Langue française impeccable
 - Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks
 
 Structure JSON exacte :
 ${jsonSchema}`;
 
-    response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 3000,
-      messages: [{ role: "user", content: prompt }],
-    });
-  }
-
-  const webSearchUsed = !imageUrl && useWebSearch;
-
-  try {
+      response = await anthropic.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 3000,
+        messages: [{ role: "user", content: prompt }],
+      });
+    }
 
     const raw = (response.content[0] as { type: string; text: string }).text.trim();
     const jsonStr = raw.startsWith("{") ? raw : raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
