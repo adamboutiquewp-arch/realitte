@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/utils";
 import DeleteArticleButton from "@/components/admin/DeleteArticleButton";
 import FeaturedCategorieButton from "@/components/admin/FeaturedCategorieButton";
 import ToggleArticleButton from "@/components/admin/ToggleArticleButton";
+import FacebookPostButton from "@/components/admin/FacebookPostButton";
 
 export const metadata: Metadata = { title: "Articles" };
 export const dynamic = "force-dynamic";
@@ -191,6 +192,9 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                             categorieNom={a.categorie.nom}
                             categorieColor={a.categorie.couleur}
                           />
+                        )}
+                        {a.statut === "PUBLISHED" && (
+                          <FacebookPostButton articleId={a.id} variant="list" />
                         )}
                         {a.statut === "PUBLISHED" && (
                           <Link

@@ -15,9 +15,15 @@ const RESEAUX = [
   { cle: "social_facebook",  label: "Facebook",  placeholder: "https://facebook.com/realitte" },
 ];
 
+const FACEBOOK_API = [
+  { cle: "facebook_page_id",    label: "Page ID Facebook",    placeholder: "123456789012345", type: "text" },
+  { cle: "facebook_page_token", label: "Page Access Token Facebook", placeholder: "EAABs…", type: "password" },
+];
+
 async function saveConfig(formData: FormData) {
   "use server";
-  for (const { cle } of RESEAUX) {
+  const allFields = [...RESEAUX, ...FACEBOOK_API];
+  for (const { cle } of allFields) {
     const valeur = (formData.get(cle) as string)?.trim() || "";
     await prisma.siteConfig.upsert({
       where: { cle },
@@ -70,6 +76,33 @@ export default async function ParametresPage({ searchParams }: PageProps) {
             />
           </div>
         ))}
+
+        <hr className="border-[#E0E0E0]" />
+
+        <p className="text-[11px] font-bold tracking-widest uppercase text-[#1877F2] mt-2">
+          Publication automatique Facebook
+        </p>
+        <p className="text-[12px] text-[#999] -mt-3">
+          Permet de poster les articles directement sur la page Facebook depuis l&apos;admin.
+        </p>
+
+        {FACEBOOK_API.map(({ cle, label, placeholder, type }) => (
+          <div key={cle}>
+            <label className="block text-[12px] font-bold text-[#444] mb-1.5">{label}</label>
+            <input
+              type={type}
+              name={cle}
+              defaultValue={get(cle)}
+              placeholder={placeholder}
+              autoComplete="off"
+              className="w-full px-4 py-2.5 border border-[#E0E0E0] text-[13px] outline-none focus:border-[#1877F2] transition-colors font-mono"
+            />
+          </div>
+        ))}
+
+        <div className="p-3 bg-[#E7F3FF] border border-[#C3D9F5] text-[12px] text-[#1877F2] -mt-2">
+          <strong>Comment obtenir le token ?</strong> Meta for Developers → votre app → Graph API Explorer → sélectionner la page → générer un Page Access Token permanent (voir la procédure dans l&apos;admin).
+        </div>
 
         <div className="pt-2">
           <button

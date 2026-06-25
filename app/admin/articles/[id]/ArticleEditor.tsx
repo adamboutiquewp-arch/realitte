@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import FacebookPostButton from "@/components/admin/FacebookPostButton";
 
 interface Categorie {
   id: string;
@@ -181,6 +182,9 @@ export default function ArticleEditor({ article, categories }: Props) {
             className="px-4 py-2.5 bg-black text-white text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] disabled:opacity-50 transition-colors">
             {saving ? "…" : "Publier"}
           </button>
+          {article.statut === "PUBLISHED" && (
+            <FacebookPostButton articleId={article.id} variant="editor" />
+          )}
         </div>
       </div>
 
