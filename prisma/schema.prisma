@@ -144,6 +144,7 @@ model EspacePartenaire {
   ctaTexte  String  @default("EN SAVOIR PLUS")
   position  String  @default("home")
   ordre     Int     @default(0)
+  clics     Int     @default(0)
 
   @@map("espace_partenaire")
 }

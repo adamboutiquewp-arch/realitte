@@ -12,6 +12,7 @@ interface Slot {
   ctaTexte: string;
   actif: boolean;
   ordre: number;
+  clics: number;
 }
 
 interface Props {
@@ -116,6 +117,7 @@ export default function PartenairesManager({ slots: initial }: Props) {
                 <div>
                   <p className="text-[13px] font-bold text-[#111]">{slot.titre}</p>
                   {slot.lien && <p className="text-[11px] text-[#9E9E9E] truncate">{slot.lien}</p>}
+                  <p className="text-[12px] font-bold text-[#E53935] mt-1">👆 {slot.clics} clic{slot.clics > 1 ? "s" : ""}</p>
                 </div>
                 <div className="flex gap-2 mt-auto">
                   <button onClick={() => openEdit(slot, i)}

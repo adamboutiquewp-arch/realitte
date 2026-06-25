@@ -241,7 +241,7 @@ export default async function ArticlePage({ params }: PageProps) {
           {/* Sidebar */}
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-8">
-              <EspacePartenaire />
+              <EspacePartenaire variant="sidebar" />
               {articlesLies.length > 0 && (
                 <div>
                   <h3 className="text-[11px] font-bold tracking-widest uppercase text-[#E53935] mb-4">

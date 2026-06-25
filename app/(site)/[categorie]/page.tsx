@@ -188,13 +188,13 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
 
           {/* Sidebar desktop */}
           <aside className="hidden lg:block pl-8 border-l border-[#E0E0E0]">
-            <EspacePartenaire />
+            <EspacePartenaire variant="sidebar" />
           </aside>
         </div>
 
         {/* Espace partenaire mobile */}
         <div className="lg:hidden mt-8">
-          <EspacePartenaire />
+          <EspacePartenaire variant="sidebar" />
         </div>
 
         {/* Success Stories en bas */}
