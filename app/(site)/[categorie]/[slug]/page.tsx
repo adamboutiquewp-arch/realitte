@@ -146,26 +146,19 @@ export default async function ArticlePage({ params }: PageProps) {
       />
 
       {/* ── Hero image ── */}
-      <div className="relative bg-black overflow-hidden">
+      <div className="relative bg-black" style={{ height: "min(48vh, 460px)" }}>
         {article.imageUrl && (
-          <>
-            {/* Mobile : recadrage 16:9 centré | Desktop : image complète */}
-            <div className="relative aspect-[16/9] md:aspect-[1920/1005]">
-              <Image
-                src={article.imageUrl}
-                alt={article.imageAlt || article.titre}
-                fill
-                priority
-                className="object-cover object-center opacity-75"
-                sizes="(max-width: 768px) 100vw, 100vw"
-              />
-            </div>
-          </>
+          <Image
+            src={article.imageUrl}
+            alt={article.imageAlt || article.titre}
+            fill
+            priority
+            className="object-cover opacity-70"
+            style={{ objectPosition: "center 20%" }}
+            sizes="100vw"
+          />
         )}
-        {!article.imageUrl && <div className="h-48 md:h-64" />}
-
-        {/* Gradient + titre — par-dessus l'image */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 container-site pb-5 md:pb-8">
           <Link href={`/${article.categorie.slug}`} className="inline-block mb-2 md:mb-3">
             <span
