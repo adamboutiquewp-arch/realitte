@@ -6,6 +6,68 @@ import { slugify } from "@/lib/slugify";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+async function searchWeb(query: string): Promise<string> {
+  const key = process.env.SERPER_API_KEY;
+  if (!key) return "";
+  try {
+    const res = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: { "X-API-KEY": key, "Content-Type": "application/json" },
+      body: JSON.stringify({ q: query, num: 6, gl: "fr", hl: "fr" }),
+    });
+    if (!res.ok) return "";
+    const data = await res.json();
+
+    const results: string[] = [];
+
+    // Résultats organiques
+    if (data.organic) {
+      for (const r of data.organic.slice(0, 5)) {
+        results.push(`TITRE: ${r.title}\nSOURCE: ${r.link}\nRÉSUMÉ: ${r.snippet}`);
+      }
+    }
+
+    // Knowledge Graph (personnalités, infos factuelles)
+    if (data.knowledgeGraph) {
+      const kg = data.knowledgeGraph;
+      const kgLines = [`NOM: ${kg.title}`, kg.type ? `TYPE: ${kg.type}` : "", kg.description ? `DESCRIPTION: ${kg.description}` : ""];
+      if (kg.attributes) {
+        for (const [k, v] of Object.entries(kg.attributes).slice(0, 8)) {
+          kgLines.push(`${k}: ${v}`);
+        }
+      }
+      results.unshift(kgLines.filter(Boolean).join("\n"));
+    }
+
+    // Top stories (actualités récentes)
+    if (data.topStories) {
+      for (const s of data.topStories.slice(0, 3)) {
+        results.push(`ACTU: ${s.title}\nSOURCE: ${s.link}\nDATE: ${s.date || "récent"}`);
+      }
+    }
+
+    return results.join("\n\n---\n\n");
+  } catch {
+    return "";
+  }
+}
+
+async function fetchWikipediaImage(query: string): Promise<{ url: string; alt: string } | null> {
+  try {
+    const tryLang = async (lang: string) => {
+      const res = await fetch(
+        `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.originalimage?.source || data.thumbnail?.source || null;
+    };
+    const url = (await tryLang("fr")) ?? (await tryLang("en"));
+    if (url) return { url, alt: query };
+    return null;
+  } catch { return null; }
+}
+
 async function fetchUnsplashImage(query: string): Promise<{ url: string; alt: string } | null> {
   try {
     const res = await fetch(
@@ -26,13 +88,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  const { sujet, categorieSlugHint } = await req.json();
+  const { sujet, categorieSlugHint, useWebSearch } = await req.json();
   if (!sujet?.trim()) {
     return NextResponse.json({ error: "Sujet requis" }, { status: 400 });
   }
 
+  // Recherche web si activée
+  let webContext = "";
+  if (useWebSearch) {
+    webContext = await searchWeb(sujet.trim());
+  }
+
+  const contextBlock = webContext
+    ? `\n\nVoici des informations récentes trouvées sur internet sur ce sujet. Utilise ces faits réels pour écrire l'article :\n\n${webContext}\n\nIMPORTANT: Utilise ces informations réelles. Ne les invente pas, ne les modifie pas.`
+    : "";
+
   const prompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
-Rédige un article complet et original sur le sujet suivant : "${sujet}"
+Rédige un article complet et original sur le sujet suivant : "${sujet}"${contextBlock}
 
 Règles :
 - Contenu factuel, bien documenté, ton journalistique engagé
@@ -50,7 +122,8 @@ Structure JSON exacte :
   "sousCategorie": "Sous-catégorie précise ou null",
   "tags": ["tag1", "tag2", "tag3"],
   "metaTitle": "Meta titre SEO (max 60 chars)",
-  "metaDescription": "Meta description (max 155 chars)"
+  "metaDescription": "Meta description (max 155 chars)",
+  "photoQuery": "Mot-clé en français pour chercher une photo (nom de la personne ou du sujet)"
 }`;
 
   try {
@@ -68,7 +141,7 @@ Structure JSON exacte :
       where: { slug: parsed.categorieSlug },
     });
     if (!categorie) {
-      return NextResponse.json({ error: `Catégorie "${parsed.categorieSlug}" introuvable en base` }, { status: 400 });
+      return NextResponse.json({ error: `Catégorie "${parsed.categorieSlug}" introuvable` }, { status: 400 });
     }
 
     const baseSlug = slugify(parsed.titre);
@@ -79,8 +152,10 @@ Structure JSON exacte :
     }
 
     const wordCount = parsed.contenu.replace(/<[^>]+>/g, "").split(/\s+/).length;
-    const imageQuery = (parsed.tags?.[0] || sujet).slice(0, 50);
-    const image = await fetchUnsplashImage(imageQuery);
+    const photoQuery = parsed.photoQuery || parsed.tags?.[0] || sujet;
+
+    // Cherche d'abord sur Wikipedia (meilleur pour les personnalités), sinon Unsplash
+    const image = (await fetchWikipediaImage(photoQuery)) ?? (await fetchUnsplashImage(photoQuery));
 
     const article = await prisma.article.create({
       data: {
@@ -102,7 +177,12 @@ Structure JSON exacte :
       },
     });
 
-    return NextResponse.json({ articleId: article.id, titre: article.titre, slug: article.slug });
+    return NextResponse.json({
+      articleId: article.id,
+      titre: article.titre,
+      slug: article.slug,
+      webSearchUsed: !!webContext,
+    });
   } catch (e) {
     console.error("generate-custom error:", e);
     return NextResponse.json({ error: e instanceof Error ? e.message : "Erreur" }, { status: 500 });

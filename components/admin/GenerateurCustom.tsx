@@ -22,8 +22,9 @@ const EXEMPLES = [
 export default function GenerateurCustom({ categories }: { categories: Categorie[] }) {
   const [sujet, setSujet] = useState("");
   const [categorieSlug, setCategorieSlug] = useState("");
+  const [useWebSearch, setUseWebSearch] = useState(true);
   const [state, setState] = useState<"idle" | "loading" | "ok" | "error">("idle");
-  const [result, setResult] = useState<{ articleId: string; titre: string; slug: string } | null>(null);
+  const [result, setResult] = useState<{ articleId: string; titre: string; slug: string; webSearchUsed?: boolean } | null>(null);
   const [error, setError] = useState("");
 
   const generate = async () => {
@@ -36,7 +37,7 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
       const res = await fetch("/api/admin/generate-custom", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sujet: sujet.trim(), categorieSlugHint: categorieSlug || undefined }),
+        body: JSON.stringify({ sujet: sujet.trim(), categorieSlugHint: categorieSlug || undefined, useWebSearch }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
@@ -124,6 +125,20 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
             </div>
           </div>
 
+          {/* Recherche web */}
+          <div className="flex items-center justify-between p-3 bg-[#F0F7FF] border border-[#C3D9F5] rounded-lg">
+            <div>
+              <p className="text-[12px] font-bold text-[#1877F2]">🔍 Recherche web en temps réel</p>
+              <p className="text-[11px] text-[#6B9FD4] mt-0.5">Claude cherche sur internet avant d&apos;écrire — infos récentes et factuelles</p>
+            </div>
+            <button
+              onClick={() => setUseWebSearch((v) => !v)}
+              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${useWebSearch ? "bg-[#1877F2]" : "bg-[#DDD]"}`}
+            >
+              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${useWebSearch ? "translate-x-5" : "translate-x-0.5"}`} />
+            </button>
+          </div>
+
           {/* Bouton */}
           <div className="pt-1">
             <button
@@ -167,6 +182,9 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
             <div className="flex-1 min-w-0">
               <p className="text-[14px] font-bold text-green-800">Article généré avec succès !</p>
               <p className="text-[12px] text-green-700 mt-0.5 line-clamp-2">{result.titre}</p>
+              {result.webSearchUsed && (
+                <p className="text-[11px] text-blue-600 mt-1 font-medium">🔍 Basé sur des infos récentes trouvées sur internet</p>
+              )}
               <p className="text-[11px] text-green-600 mt-2">
                 L&apos;article est en attente de validation — révise-le et publie-le dans l&apos;éditeur.
               </p>
