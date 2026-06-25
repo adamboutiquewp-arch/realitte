@@ -16,32 +16,27 @@ export default async function EspacePartenaire() {
       <div className="grid grid-cols-3 gap-3 md:gap-4">
         {slots.map((slot, i) =>
           slot ? (
-            /* Slot occupé — logo cliquable */
+            /* Slot occupé — image remplit tout le carré, tout est cliquable */
             <a
               key={slot.id}
               href={slot.lien || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex flex-col items-center justify-center gap-3 bg-[#111] border border-[#C9A84C]/50 hover:border-[#C9A84C] transition-colors duration-200 aspect-square p-4"
+              className="relative block aspect-square overflow-hidden border border-[#C9A84C]/50 hover:border-[#C9A84C] transition-colors duration-200"
             >
               {slot.imageUrl ? (
-                <div className="relative w-full flex-1 flex items-center justify-center">
-                  <Image
-                    src={slot.imageUrl}
-                    alt={slot.titre}
-                    width={160}
-                    height={80}
-                    className="object-contain max-h-[70%]"
-                  />
-                </div>
+                <Image
+                  src={slot.imageUrl}
+                  alt={slot.titre}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 33vw, 20vw"
+                />
               ) : (
-                <div className="w-10 h-10 md:w-14 md:h-14 border border-[#C9A84C] flex items-center justify-center">
-                  <span className="text-[#C9A84C] font-bold text-xs font-mono">LOGO</span>
+                <div className="absolute inset-0 bg-[#111] flex items-center justify-center">
+                  <span className="text-[#C9A84C] font-bold text-xs font-mono">{slot.titre}</span>
                 </div>
               )}
-              <span className="text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-white/40 group-hover:text-white border border-white/20 group-hover:border-white px-2 md:px-3 py-1 transition-colors">
-                {slot.ctaTexte}
-              </span>
             </a>
           ) : (
             /* Slot vide — placeholder */
