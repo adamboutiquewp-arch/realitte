@@ -29,7 +29,7 @@ export default async function EspacePartenaire() {
                   src={slot.imageUrl}
                   alt={slot.titre}
                   fill
-                  className="object-cover"
+                  className="object-contain p-3"
                   sizes="(max-width: 768px) 33vw, 20vw"
                 />
               ) : (
