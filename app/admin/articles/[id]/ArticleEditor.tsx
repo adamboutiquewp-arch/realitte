@@ -69,6 +69,30 @@ export default function ArticleEditor({ article, categories }: Props) {
   const [ovResults, setOvResults] = useState<{ url: string; thumbnail: string; title: string; creator: string }[]>([]);
   const [ovMsg, setOvMsg] = useState("");
 
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState("");
+
+  const uploadImage = async (file: File) => {
+    setUploadLoading(true);
+    setUploadMsg("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setForm((f) => ({ ...f, imageUrl: data.url, imageAlt: file.name.replace(/\.[^.]+$/, "") }));
+        setUploadMsg("✓ Image uploadée !");
+      } else {
+        setUploadMsg(data.error || "Erreur upload");
+      }
+    } catch {
+      setUploadMsg("Erreur réseau");
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   const searchWikipedia = async () => {
     if (!wikiSearch.trim()) return;
     setWikiLoading(true);
@@ -242,6 +266,34 @@ export default function ArticleEditor({ article, categories }: Props) {
                 placeholder="PSG, Football, Ligue des Champions"
                 className="w-full px-4 py-3 border border-[#E0E0E0] text-[13px] outline-none focus:border-black" />
             </Field>
+            {/* Upload depuis l'ordinateur */}
+            <div className="p-3 bg-[#F5FFF5] border border-[#B7DFB7]">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-[#4CAF50] mb-2">Uploader une image</p>
+              <label className={`flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed cursor-pointer transition-colors ${
+                uploadLoading ? "border-[#4CAF50] bg-[#E8F5E9]" : "border-[#B7DFB7] hover:border-[#4CAF50] hover:bg-[#E8F5E9]"
+              }`}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadLoading}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadImage(file);
+                    e.target.value = "";
+                  }}
+                />
+                <span className="text-[13px] font-medium text-[#4CAF50]">
+                  {uploadLoading ? "Upload en cours…" : "📁 Choisir une image depuis mon ordinateur"}
+                </span>
+              </label>
+              {uploadMsg && (
+                <p className={`text-[11px] mt-1.5 font-medium ${uploadMsg.startsWith("✓") ? "text-green-600" : "text-red-500"}`}>
+                  {uploadMsg}
+                </p>
+              )}
+            </div>
+
             {/* Recherche Wikipedia */}
             <div className="p-3 bg-[#F9F9F9] border border-[#E0E0E0]">
               <p className="text-[10px] font-bold tracking-widest uppercase text-[#999] mb-2">Chercher photo Wikipedia</p>
