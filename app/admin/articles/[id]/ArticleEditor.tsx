@@ -207,7 +207,7 @@ export default function ArticleEditor({ article, categories }: Props) {
             {saving ? "…" : "Publier"}
           </button>
           {article.statut === "PUBLISHED" && (
-            <FacebookPostButton article={{ id: article.id, titre: form.titre, chapo: form.chapo, imageUrl: form.imageUrl || null, slug: article.slug, tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean), categorie: article.categorie }} variant="editor" />
+            <FacebookPostButton article={{ id: article.id, slug: article.slug, categorie: article.categorie }} variant="editor" />
           )}
         </div>
       </div>
