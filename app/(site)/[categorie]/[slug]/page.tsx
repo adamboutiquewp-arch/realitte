@@ -69,17 +69,30 @@ export default async function ArticlePage({ params }: PageProps) {
     .update({ where: { id: article.id }, data: { vues: { increment: 1 } } })
     .catch(() => {});
 
-  // Articles liés
-  const articlesLies = await prisma.article.findMany({
-    where: {
-      statut: "PUBLISHED",
-      categorieId: article.categorieId,
-      id: { not: article.id },
-    },
-    include: { categorie: true },
-    orderBy: { datePublication: "desc" },
-    take: 3,
-  });
+  // Articles liés — par tags d'abord, sinon par catégorie
+  let articlesLies = article.tags.length > 0
+    ? await prisma.article.findMany({
+        where: {
+          statut: "PUBLISHED",
+          id: { not: article.id },
+          tags: { hasSome: article.tags },
+        },
+        include: { categorie: true },
+        orderBy: { datePublication: "desc" },
+        take: 3,
+      })
+    : [];
+
+  if (articlesLies.length < 3) {
+    const ids = [article.id, ...articlesLies.map((a) => a.id)];
+    const complement = await prisma.article.findMany({
+      where: { statut: "PUBLISHED", categorieId: article.categorieId, id: { notIn: ids } },
+      include: { categorie: true },
+      orderBy: { datePublication: "desc" },
+      take: 3 - articlesLies.length,
+    });
+    articlesLies = [...articlesLies, ...complement];
+  }
 
   const mappedLies: ArticleCardType[] = articlesLies.map((a) => ({
     id: a.id,
@@ -232,8 +245,30 @@ export default async function ArticlePage({ params }: PageProps) {
 
           {/* Sidebar */}
           <aside className="hidden lg:block">
-            <div className="sticky top-24">
+            <div className="sticky top-24 space-y-8">
               <EspacePartenaire />
+              {articlesLies.length > 0 && (
+                <div>
+                  <h3 className="text-[11px] font-bold tracking-widest uppercase text-[#E53935] mb-4">
+                    Sur le même sujet
+                  </h3>
+                  <ul className="space-y-4">
+                    {articlesLies.map((a) => (
+                      <li key={a.id} className="border-b border-[#F0F0F0] pb-4 last:border-0">
+                        <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: a.categorie.couleur }}>
+                          {a.categorie.nom}
+                        </span>
+                        <Link
+                          href={`/${a.categorie.slug}/${a.slug}`}
+                          className="block text-[13px] font-semibold text-[#111] hover:text-[#E53935] transition-colors leading-snug mt-1"
+                        >
+                          {a.titre}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </aside>
         </div>
