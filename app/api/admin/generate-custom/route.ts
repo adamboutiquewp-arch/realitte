@@ -88,24 +88,70 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  const { sujet, categorieSlugHint, useWebSearch } = await req.json();
-  if (!sujet?.trim()) {
+  const { sujet, categorieSlugHint, useWebSearch, imageUrl } = await req.json();
+
+  // En mode photo, le sujet est optionnel. En mode texte, il est requis.
+  if (!imageUrl && !sujet?.trim()) {
     return NextResponse.json({ error: "Sujet requis" }, { status: 400 });
   }
 
-  // Recherche web si activée
-  let webContext = "";
-  if (useWebSearch) {
-    webContext = await searchWeb(sujet.trim());
-  }
-
-  const contextBlock = webContext
-    ? `\n\nVoici des informations récentes trouvées sur internet sur ce sujet. Utilise ces faits réels pour écrire l'article :\n\n${webContext}\n\nIMPORTANT: Utilise ces informations réelles. Ne les invente pas, ne les modifie pas.`
-    : "";
-
   const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
-  const prompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
+  const jsonSchema = `{
+  "titre": "Titre accrocheur SEO (max 80 chars)",
+  "chapo": "Chapô de 2 phrases max, résumé percutant",
+  "contenu": "<p>Corps de l'article en HTML...</p><h2>Sous-titre</h2><p>...</p>",
+  "categorieSlug": "${categorieSlugHint || "actu|sport|economie|politique|success-stories|people|sante-beaute|fait-divers"}",
+  "sousCategorie": "Sous-catégorie précise ou null",
+  "tags": ["tag1", "tag2", "tag3"],
+  "metaTitle": "Meta titre SEO (max 60 chars)",
+  "metaDescription": "Meta description (max 155 chars)",
+  "photoQuery": "Mot-clé pour chercher une photo (si besoin d'une autre image)"
+}`;
+
+  let response;
+
+  if (imageUrl) {
+    // Mode PHOTO — Claude analyse l'image et génère un article basé sur ce qu'il voit
+    const photoPrompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
+Nous sommes le ${today}.
+
+Analyse cette photo avec attention : identifie les personnes, le lieu, le contexte, l'événement ou le sujet représenté.${sujet ? `\nIndice supplémentaire donné par l'admin : "${sujet}"` : ""}
+
+Ensuite rédige un article complet de 400 à 600 mots qui correspond exactement au contenu de cette photo. L'article doit parler de ce qui est visible sur la photo.
+
+Règles :
+- Contenu factuel, ton journalistique engagé
+- HTML simple uniquement (p, h2, h3, blockquote)
+- Langue française impeccable
+- Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks
+
+Structure JSON exacte :
+${jsonSchema}`;
+
+    response = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 3000,
+      messages: [{
+        role: "user",
+        content: [
+          { type: "image", source: { type: "url", url: imageUrl } },
+          { type: "text", text: photoPrompt },
+        ],
+      }],
+    });
+  } else {
+    // Mode SUJET — comportement normal avec recherche web optionnelle
+    let webContext = "";
+    if (useWebSearch) {
+      webContext = await searchWeb(sujet.trim());
+    }
+
+    const contextBlock = webContext
+      ? `\n\nVoici des informations récentes trouvées sur internet sur ce sujet. Utilise ces faits réels pour écrire l'article :\n\n${webContext}\n\nIMPORTANT: Utilise ces informations réelles. Ne les invente pas, ne les modifie pas.`
+      : "";
+
+    const prompt = `Tu es un journaliste professionnel pour le média Réalitte (France).
 Nous sommes le ${today}. Base-toi sur cette date pour tous les calculs de temps (échéances, délais, anniversaires, mandats, etc.).
 Rédige un article complet et original sur le sujet suivant : "${sujet}"${contextBlock}
 
@@ -117,24 +163,18 @@ Règles :
 - Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks
 
 Structure JSON exacte :
-{
-  "titre": "Titre accrocheur SEO (max 80 chars)",
-  "chapo": "Chapô de 2 phrases max, résumé percutant",
-  "contenu": "<p>Corps de l'article en HTML...</p><h2>Sous-titre</h2><p>...</p>",
-  "categorieSlug": "${categorieSlugHint || "actu|sport|economie|politique|success-stories|people|sante-beaute|fait-divers"}",
-  "sousCategorie": "Sous-catégorie précise ou null",
-  "tags": ["tag1", "tag2", "tag3"],
-  "metaTitle": "Meta titre SEO (max 60 chars)",
-  "metaDescription": "Meta description (max 155 chars)",
-  "photoQuery": "Mot-clé en français pour chercher une photo (nom de la personne ou du sujet)"
-}`;
+${jsonSchema}`;
 
-  try {
-    const response = await anthropic.messages.create({
+    response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 3000,
       messages: [{ role: "user", content: prompt }],
     });
+  }
+
+  const webSearchUsed = !imageUrl && useWebSearch;
+
+  try {
 
     const raw = (response.content[0] as { type: string; text: string }).text.trim();
     const jsonStr = raw.startsWith("{") ? raw : raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
@@ -155,10 +195,21 @@ Structure JSON exacte :
     }
 
     const wordCount = parsed.contenu.replace(/<[^>]+>/g, "").split(/\s+/).length;
-    const photoQuery = parsed.photoQuery || parsed.tags?.[0] || sujet;
 
-    // Cherche d'abord sur Wikipedia (meilleur pour les personnalités), sinon Unsplash
-    const image = (await fetchWikipediaImage(photoQuery)) ?? (await fetchUnsplashImage(photoQuery));
+    let finalImageUrl: string | null = null;
+    let finalImageAlt: string = sujet || "photo";
+
+    if (imageUrl) {
+      // Mode photo : on garde la photo uploadée telle quelle
+      finalImageUrl = imageUrl;
+      finalImageAlt = sujet || parsed.titre || "photo";
+    } else {
+      // Mode sujet : on cherche une image Wikipedia puis Unsplash
+      const photoQuery = parsed.photoQuery || parsed.tags?.[0] || sujet;
+      const image = (await fetchWikipediaImage(photoQuery)) ?? (await fetchUnsplashImage(photoQuery));
+      finalImageUrl = image?.url || null;
+      finalImageAlt = image?.alt || sujet || parsed.titre;
+    }
 
     const article = await prisma.article.create({
       data: {
@@ -175,8 +226,8 @@ Structure JSON exacte :
         metaTitle: parsed.metaTitle || null,
         metaDescription: parsed.metaDescription || null,
         tempsLecture: Math.max(1, Math.ceil(wordCount / 200)),
-        imageUrl: image?.url || null,
-        imageAlt: image?.alt || sujet,
+        imageUrl: finalImageUrl,
+        imageAlt: finalImageAlt,
       },
     });
 
@@ -184,7 +235,7 @@ Structure JSON exacte :
       articleId: article.id,
       titre: article.titre,
       slug: article.slug,
-      webSearchUsed: !!webContext,
+      webSearchUsed,
     });
   } catch (e) {
     console.error("generate-custom error:", e);

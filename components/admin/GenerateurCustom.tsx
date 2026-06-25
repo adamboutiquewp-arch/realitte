@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 
 interface Categorie {
@@ -19,16 +19,52 @@ const EXEMPLES = [
   "Les 10 entrepreneurs français qui font bouger les lignes",
 ];
 
+type Mode = "sujet" | "photo";
+
 export default function GenerateurCustom({ categories }: { categories: Categorie[] }) {
+  const [mode, setMode] = useState<Mode>("sujet");
   const [sujet, setSujet] = useState("");
   const [categorieSlug, setCategorieSlug] = useState("");
   const [useWebSearch, setUseWebSearch] = useState(true);
-  const [state, setState] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [state, setState] = useState<"idle" | "uploading" | "loading" | "ok" | "error">("idle");
   const [result, setResult] = useState<{ articleId: string; titre: string; slug: string; webSearchUsed?: boolean } | null>(null);
   const [error, setError] = useState("");
 
+  // Photo mode
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = async (file: File) => {
+    setState("uploading");
+    setError("");
+    const form = new FormData();
+    form.append("file", file);
+    try {
+      const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Erreur upload");
+      setUploadedImageUrl(data.url);
+      setState("idle");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur upload");
+      setState("error");
+    }
+  };
+
+  const onFilePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoPreview(URL.createObjectURL(file));
+    setUploadedImageUrl(null);
+    await handlePhotoUpload(file);
+  };
+
   const generate = async () => {
-    if (!sujet.trim() || state === "loading") return;
+    if (state === "loading" || state === "uploading") return;
+    if (mode === "sujet" && !sujet.trim()) return;
+    if (mode === "photo" && !uploadedImageUrl) return;
+
     setState("loading");
     setError("");
     setResult(null);
@@ -37,7 +73,12 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
       const res = await fetch("/api/admin/generate-custom", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sujet: sujet.trim(), categorieSlugHint: categorieSlug || undefined, useWebSearch }),
+        body: JSON.stringify({
+          sujet: sujet.trim() || undefined,
+          categorieSlugHint: categorieSlug || undefined,
+          useWebSearch: mode === "sujet" ? useWebSearch : false,
+          imageUrl: mode === "photo" ? uploadedImageUrl : undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
@@ -55,11 +96,16 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
     setError("");
     setSujet("");
     setCategorieSlug("");
+    setUploadedImageUrl(null);
+    setPhotoPreview(null);
   };
+
+  const canGenerate =
+    (mode === "sujet" && sujet.trim().length > 0) ||
+    (mode === "photo" && uploadedImageUrl !== null);
 
   return (
     <div className="space-y-6">
-      {/* Formulaire */}
       <div className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#F0F0F0] flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-[#E53935]/10 flex items-center justify-center">
@@ -68,42 +114,120 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
             </svg>
           </div>
           <div>
-            <h2 className="text-[14px] font-bold text-[#111]">Nouveau sujet</h2>
-            <p className="text-[11px] text-[#bbb]">Claude génère un article de 400-600 mots</p>
+            <h2 className="text-[14px] font-bold text-[#111]">Générer un article</h2>
+            <p className="text-[11px] text-[#bbb]">Claude rédige un article de 400-600 mots</p>
+          </div>
+
+          {/* Toggle mode */}
+          <div className="ml-auto flex bg-[#F5F5F5] rounded-lg p-0.5 gap-0.5">
+            <button
+              onClick={() => { setMode("sujet"); setError(""); }}
+              className={`px-3 py-1.5 rounded-md text-[12px] font-bold transition-all ${mode === "sujet" ? "bg-white text-[#111] shadow-sm" : "text-[#999]"}`}
+            >
+              ✍️ Sujet
+            </button>
+            <button
+              onClick={() => { setMode("photo"); setError(""); }}
+              className={`px-3 py-1.5 rounded-md text-[12px] font-bold transition-all ${mode === "photo" ? "bg-white text-[#111] shadow-sm" : "text-[#999]"}`}
+            >
+              📷 Photo
+            </button>
           </div>
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Sujet */}
-          <div>
-            <label className="block text-[11px] font-bold tracking-wider uppercase text-[#999] mb-2">
-              Sujet de l&apos;article *
-            </label>
-            <textarea
-              value={sujet}
-              onChange={(e) => setSujet(e.target.value)}
-              placeholder="Ex: Mbappé signe au Real Madrid, les conséquences pour la Ligue 1..."
-              rows={3}
-              disabled={state === "loading"}
-              className="w-full px-4 py-3 border border-[#E8E8E8] rounded-lg text-[13px] outline-none focus:border-[#111] transition-colors resize-none disabled:opacity-50 disabled:bg-[#F9F9F9]"
-            />
-            <p className="text-[11px] text-[#bbb] mt-1">
-              Plus tu es précis, meilleur sera l&apos;article. Tu peux mentionner des noms, des chiffres, des dates.
-            </p>
-          </div>
 
-          {/* Catégorie forcée */}
+          {/* Mode SUJET */}
+          {mode === "sujet" && (
+            <div>
+              <label className="block text-[11px] font-bold tracking-wider uppercase text-[#999] mb-2">
+                Sujet de l&apos;article *
+              </label>
+              <textarea
+                value={sujet}
+                onChange={(e) => setSujet(e.target.value)}
+                placeholder="Ex: Mbappé signe au Real Madrid, les conséquences pour la Ligue 1..."
+                rows={3}
+                disabled={state === "loading"}
+                className="w-full px-4 py-3 border border-[#E8E8E8] rounded-lg text-[13px] outline-none focus:border-[#111] transition-colors resize-none disabled:opacity-50 disabled:bg-[#F9F9F9]"
+              />
+              <p className="text-[11px] text-[#bbb] mt-1">
+                Plus tu es précis, meilleur sera l&apos;article.
+              </p>
+            </div>
+          )}
+
+          {/* Mode PHOTO */}
+          {mode === "photo" && (
+            <div>
+              <label className="block text-[11px] font-bold tracking-wider uppercase text-[#999] mb-2">
+                Ta photo *
+              </label>
+
+              {photoPreview ? (
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photoPreview} alt="" className="w-full h-48 object-cover rounded-lg border border-[#E8E8E8]" />
+                  {state === "uploading" && (
+                    <div className="absolute inset-0 bg-white/70 rounded-lg flex items-center justify-center gap-2 text-[13px] font-bold text-[#111]">
+                      <Spinner /> Upload en cours…
+                    </div>
+                  )}
+                  {uploadedImageUrl && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white text-[11px] font-bold px-2 py-1 rounded">
+                      ✓ Photo prête
+                    </div>
+                  )}
+                  <button
+                    onClick={() => { setPhotoPreview(null); setUploadedImageUrl(null); if (fileRef.current) fileRef.current.value = ""; }}
+                    className="mt-2 text-[11px] text-[#999] hover:text-[#E53935] transition-colors"
+                  >
+                    Changer la photo
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  className="border-2 border-dashed border-[#E8E8E8] rounded-lg p-10 text-center cursor-pointer hover:border-[#E53935] hover:bg-[#FFF5F5] transition-all"
+                >
+                  <svg className="w-8 h-8 text-[#bbb] mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <p className="text-[13px] font-bold text-[#666]">Clique pour choisir une photo</p>
+                  <p className="text-[11px] text-[#bbb] mt-1">JPG, PNG, WebP — max 10 Mo</p>
+                </div>
+              )}
+
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFilePick} />
+
+              {/* Sujet optionnel en mode photo */}
+              <div className="mt-4">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-[#999] mb-2">
+                  Précision optionnelle (Claude analyse la photo automatiquement)
+                </label>
+                <input
+                  type="text"
+                  value={sujet}
+                  onChange={(e) => setSujet(e.target.value)}
+                  placeholder="Ex: portrait de Karim Benzema, match PSG-OM..."
+                  disabled={state === "loading"}
+                  className="w-full px-4 py-3 border border-[#E8E8E8] rounded-lg text-[13px] outline-none focus:border-[#111] transition-colors disabled:opacity-50"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Catégorie */}
           <div>
             <label className="block text-[11px] font-bold tracking-wider uppercase text-[#999] mb-2">
-              Catégorie (optionnel — Claude choisit si tu ne précises pas)
+              Catégorie (optionnel)
             </label>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setCategorieSlug("")}
                 className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-all ${
-                  !categorieSlug
-                    ? "bg-[#111] text-white border-[#111]"
-                    : "bg-[#F5F5F5] text-[#999] border-[#E8E8E8] hover:border-[#bbb]"
+                  !categorieSlug ? "bg-[#111] text-white border-[#111]" : "bg-[#F5F5F5] text-[#999] border-[#E8E8E8] hover:border-[#bbb]"
                 }`}
               >
                 Auto
@@ -125,44 +249,52 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
             </div>
           </div>
 
-          {/* Recherche web */}
-          <div className="flex items-center justify-between p-3 bg-[#F0F7FF] border border-[#C3D9F5] rounded-lg">
-            <div>
-              <p className="text-[12px] font-bold text-[#1877F2]">🔍 Recherche web en temps réel</p>
-              <p className="text-[11px] text-[#6B9FD4] mt-0.5">Claude cherche sur internet avant d&apos;écrire — infos récentes et factuelles</p>
+          {/* Recherche web (mode sujet seulement) */}
+          {mode === "sujet" && (
+            <div className="flex items-center justify-between p-3 bg-[#F0F7FF] border border-[#C3D9F5] rounded-lg">
+              <div>
+                <p className="text-[12px] font-bold text-[#1877F2]">🔍 Recherche web en temps réel</p>
+                <p className="text-[11px] text-[#6B9FD4] mt-0.5">Claude cherche sur internet avant d&apos;écrire</p>
+              </div>
+              <button
+                onClick={() => setUseWebSearch((v) => !v)}
+                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${useWebSearch ? "bg-[#1877F2]" : "bg-[#DDD]"}`}
+              >
+                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${useWebSearch ? "translate-x-5" : "translate-x-0.5"}`} />
+              </button>
             </div>
-            <button
-              onClick={() => setUseWebSearch((v) => !v)}
-              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${useWebSearch ? "bg-[#1877F2]" : "bg-[#DDD]"}`}
-            >
-              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${useWebSearch ? "translate-x-5" : "translate-x-0.5"}`} />
-            </button>
-          </div>
+          )}
+
+          {mode === "photo" && uploadedImageUrl && (
+            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+              <p className="text-[12px] font-bold text-purple-700">📷 Claude va analyser ta photo</p>
+              <p className="text-[11px] text-purple-500 mt-0.5">Il va reconnaître le contenu, les personnes, le contexte — et écrire un article qui correspond exactement à la photo</p>
+            </div>
+          )}
 
           {/* Bouton */}
           <div className="pt-1">
             <button
               onClick={generate}
-              disabled={!sujet.trim() || state === "loading"}
+              disabled={!canGenerate || state === "loading" || state === "uploading"}
               className={`flex items-center gap-2.5 px-6 py-3 rounded-lg text-[13px] font-bold transition-all ${
                 state === "loading"
                   ? "bg-[#F5F5F5] text-[#999] cursor-wait"
-                  : !sujet.trim()
+                  : !canGenerate || state === "uploading"
                   ? "bg-[#F5F5F5] text-[#bbb] cursor-not-allowed"
                   : "bg-[#E53935] text-white hover:bg-[#c62828]"
               }`}
             >
               {state === "loading" ? (
-                <>
-                  <Spinner />
-                  Claude rédige… (10-30 secondes)
-                </>
+                <><Spinner /> Claude rédige… (10-30 secondes)</>
+              ) : state === "uploading" ? (
+                <><Spinner /> Upload en cours…</>
               ) : (
                 <>
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                   </svg>
-                  Générer l&apos;article
+                  {mode === "photo" ? "Générer à partir de la photo" : "Générer l'article"}
                 </>
               )}
             </button>
@@ -170,7 +302,7 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
         </div>
       </div>
 
-      {/* Résultat succès */}
+      {/* Résultat */}
       {state === "ok" && result && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-6">
           <div className="flex items-start gap-4">
@@ -220,8 +352,8 @@ export default function GenerateurCustom({ categories }: { categories: Categorie
         </div>
       )}
 
-      {/* Exemples */}
-      {state === "idle" && (
+      {/* Exemples (mode sujet seulement) */}
+      {state === "idle" && mode === "sujet" && (
         <div className="bg-white rounded-xl border border-[#EBEBEB] p-5">
           <p className="text-[11px] font-bold tracking-wider uppercase text-[#bbb] mb-3">Exemples de sujets</p>
           <div className="flex flex-wrap gap-2">
