@@ -36,6 +36,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Monétisation",
     items: [
+      { label: "Espaces partenaires", href: "/admin/partenaires",    icon: IconAd },
       { label: "Publicité",           href: "/admin/pub",            icon: IconAd },
       { label: "Entrepreneurs",       href: "/admin/entrepreneurs",  icon: IconEntrepreneur },
     ],

@@ -135,14 +135,15 @@ model AdminUser {
 }
 
 model EspacePartenaire {
-  id       String  @id @default(cuid())
-  actif    Boolean @default(true)
-  titre    String
+  id        String  @id @default(cuid())
+  actif     Boolean @default(true)
+  titre     String
   sousTitre String?
-  imageUrl String?
-  lien     String?
-  ctaTexte String  @default("EN SAVOIR PLUS")
-  position String  @default("home") // home, article, categorie
+  imageUrl  String?
+  lien      String?
+  ctaTexte  String  @default("EN SAVOIR PLUS")
+  position  String  @default("home")
+  ordre     Int     @default(0)
 
   @@map("espace_partenaire")
 }
