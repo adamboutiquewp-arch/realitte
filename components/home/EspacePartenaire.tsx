@@ -34,7 +34,7 @@ export default async function EspacePartenaire({ variant = "home" }: Props) {
                   src={slot.imageUrl}
                   alt={slot.titre}
                   fill
-                  className="object-contain p-3 transition-transform duration-300 hover:scale-105"
+                  className="object-contain p-3"
                   sizes={isSidebar ? "300px" : "(max-width: 768px) 33vw, 25vw"}
                 />
               ) : (
