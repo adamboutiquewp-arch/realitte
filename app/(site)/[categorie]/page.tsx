@@ -99,6 +99,17 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
   const sousCats = SOUS_CATEGORIES[catSlug] || ["Tout"];
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com";
+  function absUrl(page: number) {
+    const p = new URLSearchParams();
+    if (sous && sous !== "Tout") p.set("sous", sous);
+    if (page > 1) p.set("page", String(page));
+    const qs = p.toString();
+    return `${siteUrl}/${catSlug}${qs ? `?${qs}` : ""}`;
+  }
+  const prevUrl = currentPage > 1 ? absUrl(currentPage - 1) : null;
+  const nextUrl = currentPage < totalPages ? absUrl(currentPage + 1) : null;
+
   const mappedArticles: ArticleCardType[] = articles.map((a) => ({
     id: a.id,
     titre: a.titre,
@@ -121,6 +132,10 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
 
   return (
     <>
+      {/* Signaux de pagination pour les crawlers */}
+      {prevUrl && <link rel="prev" href={prevUrl} />}
+      {nextUrl && <link rel="next" href={nextUrl} />}
+
       {/* ── Hero catégorie — page 1 seulement ── */}
       {currentPage === 1 && (
         heroArticle?.imageClean ? (
