@@ -34,7 +34,8 @@ export default async function EspacePartenaire({ variant = "home" }: Props) {
                   src={slot.imageUrl}
                   alt={slot.titre}
                   fill
-                  className="object-contain p-3"
+                  className="object-contain p-3 pointer-events-none select-none"
+                  draggable={false}
                   sizes={isSidebar ? "300px" : "(max-width: 768px) 33vw, 25vw"}
                 />
               ) : (
