@@ -18,7 +18,7 @@ export default async function EspacePartenaire({ variant = "home" }: Props) {
   const isSidebar = variant === "sidebar";
 
   return (
-    <section className={isSidebar ? "space-y-3" : "my-8 md:my-12"}>
+    <section className={isSidebar ? "space-y-3 overflow-hidden" : "my-8 md:my-12 overflow-hidden"}>
       <div className={isSidebar ? "flex flex-col gap-3" : "grid grid-cols-3 gap-4 md:gap-6"}>
         {slots.map((slot, i) =>
           slot ? (
@@ -34,7 +34,7 @@ export default async function EspacePartenaire({ variant = "home" }: Props) {
                   src={slot.imageUrl}
                   alt={slot.titre}
                   fill
-                  className="object-contain p-3"
+                  className="object-contain p-3 transition-transform duration-300 hover:scale-105"
                   sizes={isSidebar ? "300px" : "(max-width: 768px) 33vw, 25vw"}
                 />
               ) : (
