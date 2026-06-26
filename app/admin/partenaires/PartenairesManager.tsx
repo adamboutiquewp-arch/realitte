@@ -13,6 +13,7 @@ interface Slot {
   actif: boolean;
   ordre: number;
   clics: number;
+  padding: number;
 }
 
 interface Props {
@@ -25,6 +26,10 @@ export default function PartenairesManager({ slots: initial }: Props) {
   const [saving, setSaving] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [form, setForm] = useState<Partial<Slot>>({});
+  const [paddings, setPaddings] = useState<Record<string, number>>(
+    Object.fromEntries(initial.map((s) => [s.id, s.padding ?? 4]))
+  );
+  const [savingPadding, setSavingPadding] = useState<string | null>(null);
 
   const TOTAL_SLOTS = 3;
   const occupied = slots.filter((s) => s.actif);
@@ -38,7 +43,7 @@ export default function PartenairesManager({ slots: initial }: Props) {
       setForm({ ...slot });
     } else {
       setEditing("new-" + index);
-      setForm({ ordre: index, titre: "", lien: "", imageUrl: null, ctaTexte: "EN SAVOIR PLUS", sousTitre: "ESPACE PARTENAIRE", actif: true });
+      setForm({ ordre: index, titre: "", lien: "", imageUrl: null, ctaTexte: "EN SAVOIR PLUS", sousTitre: "ESPACE PARTENAIRE", actif: true, padding: 4 });
     }
   };
 
@@ -66,6 +71,7 @@ export default function PartenairesManager({ slots: initial }: Props) {
         });
         const data = await res.json();
         setSlots((prev) => [...prev, data.slot]);
+        setPaddings((p) => ({ ...p, [data.slot.id]: data.slot.padding ?? 4 }));
       } else {
         const res = await fetch(`/api/admin/partenaires/${editing}`, {
           method: "PATCH",
@@ -88,6 +94,20 @@ export default function PartenairesManager({ slots: initial }: Props) {
     setEditing(null);
   };
 
+  const savePadding = async (id: string) => {
+    setSavingPadding(id);
+    try {
+      await fetch(`/api/admin/partenaires/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ padding: paddings[id] }),
+      });
+      setSlots((prev) => prev.map((s) => (s.id === id ? { ...s, padding: paddings[id] } : s)));
+    } finally {
+      setSavingPadding(null);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Résumé */}
@@ -106,19 +126,54 @@ export default function PartenairesManager({ slots: initial }: Props) {
 
             {slot ? (
               <>
-                {/* Logo */}
-                <div className="w-full h-20 bg-[#F5F5F5] flex items-center justify-center border border-[#E0E0E0]">
-                  {slot.imageUrl ? (
-                    <Image src={slot.imageUrl} alt={slot.titre} width={120} height={60} className="object-contain max-h-16" />
-                  ) : (
-                    <span className="text-[12px] text-[#9E9E9E]">Aucun logo</span>
-                  )}
-                </div>
-                <div>
+                {/* Aperçu à taille réelle (même hauteur que sidebar site) */}
+                {slot.imageUrl && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#9E9E9E]">Aperçu taille réelle</p>
+                    <div className="relative h-28 w-full border border-[#E0E0E0] overflow-hidden bg-white">
+                      <div className="absolute" style={{ inset: `${paddings[slot.id] ?? 4}px` }}>
+                        <Image
+                          src={slot.imageUrl}
+                          alt={slot.titre}
+                          fill
+                          className="object-contain"
+                          sizes="300px"
+                        />
+                      </div>
+                    </div>
+                    {/* Slider zoom */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px] text-[#9E9E9E]">
+                        <span>← Plus grand</span>
+                        <span>Plus petit →</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={40}
+                        step={2}
+                        value={paddings[slot.id] ?? 4}
+                        onChange={(e) => setPaddings((p) => ({ ...p, [slot.id]: Number(e.target.value) }))}
+                        className="w-full accent-amber-500 cursor-pointer"
+                      />
+                    </div>
+                    <button
+                      onClick={() => savePadding(slot.id)}
+                      disabled={savingPadding === slot.id}
+                      className="w-full py-2 bg-amber-500 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-amber-600 transition-colors disabled:opacity-50"
+                    >
+                      {savingPadding === slot.id ? "Sauvegarde…" : "Sauvegarder la taille"}
+                    </button>
+                  </div>
+                )}
+
+                {/* Infos */}
+                <div className="border-t border-[#F0F0F0] pt-3">
                   <p className="text-[13px] font-bold text-[#111]">{slot.titre}</p>
                   {slot.lien && <p className="text-[11px] text-[#9E9E9E] truncate">{slot.lien}</p>}
                   <p className="text-[12px] font-bold text-[#E53935] mt-1">👆 {slot.clics} clic{slot.clics > 1 ? "s" : ""}</p>
                 </div>
+
                 <div className="flex gap-2 mt-auto">
                   <button onClick={() => openEdit(slot, i)}
                     className="flex-1 py-2 bg-[#111] text-white text-[11px] font-bold uppercase tracking-widest hover:bg-[#E53935] transition-colors">
@@ -132,7 +187,7 @@ export default function PartenairesManager({ slots: initial }: Props) {
               </>
             ) : (
               <>
-                <div className="w-full h-20 bg-[#F9F9F9] flex items-center justify-center">
+                <div className="w-full h-28 bg-[#F9F9F9] flex items-center justify-center">
                   <span className="text-[11px] text-[#BDBDBD] font-medium">Disponible</span>
                 </div>
                 <button onClick={() => openEdit(null, i)}

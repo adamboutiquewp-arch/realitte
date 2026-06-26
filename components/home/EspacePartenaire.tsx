@@ -14,7 +14,6 @@ export default async function EspacePartenaire({ variant = "home" }: Props) {
   });
 
   const slots = Array.from({ length: 3 }, (_, i) => partenaires[i] ?? null);
-
   const isSidebar = variant === "sidebar";
 
   return (
@@ -27,17 +26,19 @@ export default async function EspacePartenaire({ variant = "home" }: Props) {
               href={`/api/partenaires/${slot.id}/click`}
               target="_blank"
               rel="noopener noreferrer"
-              className={`relative block overflow-hidden border border-[#C9A84C]/50 hover:border-[#C9A84C] transition-colors duration-200 ${isSidebar ? "h-28 w-full" : "h-40 md:h-52"}`}
+              className={`relative block overflow-hidden border border-[#C9A84C]/50 hover:border-[#C9A84C] transition-colors duration-200 bg-white ${isSidebar ? "h-28 w-full" : "h-40 md:h-52"}`}
             >
               {slot.imageUrl ? (
-                <Image
-                  src={slot.imageUrl}
-                  alt={slot.titre}
-                  fill
-                  className="object-contain p-1 pointer-events-none select-none"
-                  draggable={false}
-                  sizes={isSidebar ? "300px" : "(max-width: 768px) 33vw, 25vw"}
-                />
+                <div className="absolute" style={{ inset: `${slot.padding ?? 4}px` }}>
+                  <Image
+                    src={slot.imageUrl}
+                    alt={slot.titre}
+                    fill
+                    className="object-contain pointer-events-none select-none"
+                    draggable={false}
+                    sizes={isSidebar ? "300px" : "(max-width: 768px) 33vw, 25vw"}
+                  />
+                </div>
               ) : (
                 <div className="absolute inset-0 bg-[#111] flex items-center justify-center">
                   <span className="text-[#C9A84C] font-bold text-xs font-mono">{slot.titre}</span>

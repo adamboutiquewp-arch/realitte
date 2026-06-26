@@ -145,6 +145,7 @@ model EspacePartenaire {
   position  String  @default("home")
   ordre     Int     @default(0)
   clics     Int     @default(0)
+  padding   Int     @default(4)
 
   @@map("espace_partenaire")
 }

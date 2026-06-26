@@ -18,6 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       lien: body.lien,
       ctaTexte: body.ctaTexte,
       actif: body.actif,
+      ...(body.padding !== undefined && { padding: Number(body.padding) }),
     },
   });
   return NextResponse.json({ slot });
