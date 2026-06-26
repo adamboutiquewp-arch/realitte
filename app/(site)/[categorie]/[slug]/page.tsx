@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: ogImage,
       type: "article",
       publishedTime: article.datePublication?.toISOString(),
-      modifiedTime: article.dateCreation.toISOString(),
+      modifiedTime: (article.datePublication ?? article.dateCreation).toISOString(),
       section: article.categorie.nom,
       authors: [`${siteUrl}/a-propos`],
       locale: "fr_FR",
@@ -113,6 +113,10 @@ export default async function ArticlePage({ params }: PageProps) {
     },
   }));
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com";
+  const articleUrl = `${siteUrl}/${catSlug}/${slug}`;
+  const pubDate = (article.datePublication ?? article.dateCreation).toISOString();
+
   // Schema.org Article JSON-LD
   const jsonLd = {
     "@context": "https://schema.org",
@@ -120,21 +124,28 @@ export default async function ArticlePage({ params }: PageProps) {
     headline: article.titre,
     description: article.chapo,
     image: article.imageUrl ? [article.imageUrl] : [],
-    datePublished: article.datePublication?.toISOString(),
-    dateModified: article.dateCreation.toISOString(),
+    datePublished: pubDate,
+    dateModified: pubDate,
     author: { "@type": "Organization", name: article.auteur },
     publisher: {
       "@type": "Organization",
       name: "Réalitte",
       logo: {
         "@type": "ImageObject",
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com"}/logo.png`,
+        url: `${siteUrl}/logo.png`,
       },
     },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com"}/${catSlug}/${slug}`,
-    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: article.categorie.nom, item: `${siteUrl}/${catSlug}` },
+      { "@type": "ListItem", position: 3, name: article.titre, item: articleUrl },
+    ],
   };
 
   return (
@@ -143,6 +154,10 @@ export default async function ArticlePage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       {/* ── Hero article : image complète + titre DESSOUS (toujours) ── */}
