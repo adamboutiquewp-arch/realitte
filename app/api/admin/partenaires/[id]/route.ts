@@ -12,12 +12,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const slot = await prisma.espacePartenaire.update({
     where: { id },
     data: {
-      titre: body.titre,
-      sousTitre: body.sousTitre,
-      imageUrl: body.imageUrl ?? null,
-      lien: body.lien,
-      ctaTexte: body.ctaTexte,
-      actif: body.actif,
+      ...(body.titre !== undefined && { titre: body.titre }),
+      ...(body.sousTitre !== undefined && { sousTitre: body.sousTitre }),
+      ...("imageUrl" in body && { imageUrl: body.imageUrl ?? null }),
+      ...(body.lien !== undefined && { lien: body.lien }),
+      ...(body.ctaTexte !== undefined && { ctaTexte: body.ctaTexte }),
+      ...(body.actif !== undefined && { actif: body.actif }),
       ...(body.padding !== undefined && { padding: Number(body.padding) }),
     },
   });
