@@ -149,7 +149,7 @@ export default function PartenairesManager({ slots: initial }: Props) {
                       </div>
                       <input
                         type="range"
-                        min={0}
+                        min={-60}
                         max={40}
                         step={2}
                         value={paddings[slot.id] ?? 4}
