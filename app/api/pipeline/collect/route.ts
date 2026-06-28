@@ -43,9 +43,12 @@ const RSS_SOURCES = [
   { url: "https://www.programme-tv.net/news/feed/rss/",                  nom: "Programme TV News",     categorie: "actu", sousCategorie: "People" },
 
   // ── Santé & Beauté ────────────────────────────────────────
-  { url: "https://www.pourquoidocteur.fr/rss.xml",                       nom: "Pourquoi Docteur",      categorie: "actu", sousCategorie: "Santé & Beauté" },
-  { url: "https://www.medisite.fr/rss/rss.xml",                          nom: "Medisite",              categorie: "actu", sousCategorie: "Santé & Beauté" },
-  { url: "https://www.aufeminin.com/rss/news.xml",                       nom: "Aufeminin",             categorie: "actu", sousCategorie: "Santé & Beauté" },
+  { url: "https://www.pourquoidocteur.fr/rss.xml",                       nom: "Pourquoi Docteur",      categorie: "sante-beaute", sousCategorie: null },
+  { url: "https://www.medisite.fr/rss/rss.xml",                          nom: "Medisite",              categorie: "sante-beaute", sousCategorie: null },
+  { url: "https://www.aufeminin.com/rss/news.xml",                       nom: "Aufeminin",             categorie: "sante-beaute", sousCategorie: null },
+  { url: "https://www.topsante.com/feed",                                nom: "Top Santé",             categorie: "sante-beaute", sousCategorie: null },
+  { url: "https://www.santemagazine.fr/feed",                            nom: "Santé Magazine",        categorie: "sante-beaute", sousCategorie: null },
+  { url: "https://www.femmeactuelle.fr/sante/rss.xml",                   nom: "Femme Actuelle Santé",  categorie: "sante-beaute", sousCategorie: null },
 
   // ── Fait Divers ───────────────────────────────────────────
   { url: "https://www.lefigaro.fr/rss/figaro_faits-divers.xml",          nom: "Le Figaro FD",          categorie: "actu", sousCategorie: "Fait Divers" },
@@ -123,12 +126,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  // Assure que la catégorie IA existe en base (idempotent)
-  await prisma.categorie.upsert({
-    where: { slug: "ia" },
-    update: {},
-    create: { nom: "IA", slug: "ia", couleur: "#0284C7", ordre: 10 },
-  });
+  // Assure que les catégories ajoutées dynamiquement existent en base (idempotent)
+  await Promise.all([
+    prisma.categorie.upsert({
+      where: { slug: "ia" },
+      update: {},
+      create: { nom: "IA", slug: "ia", couleur: "#0284C7", ordre: 10 },
+    }),
+    prisma.categorie.upsert({
+      where: { slug: "sante-beaute" },
+      update: {},
+      create: { nom: "Santé & Beauté", slug: "sante-beaute", couleur: "#00897B", ordre: 7 },
+    }),
+  ]);
 
   // Filtre par catégories si spécifiées (?categories=sport,politique)
   const catsParam = req.nextUrl.searchParams.get("categories");

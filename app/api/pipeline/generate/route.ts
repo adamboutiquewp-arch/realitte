@@ -67,6 +67,11 @@ const PROMPT_USER = (source: { titreOriginal: string; contenuBrut: string; url: 
 - Vulgarise les concepts techniques pour un lecteur non-expert.
 - Mets en avant l'impact concret sur la vie quotidienne, les emplois ou les entreprises.
 - Le ton doit rester accessible, sans jargon inutile.`
+    : categorieSource === "sante-beaute"
+    ? `IMPORTANT : Cette source provient de la catégorie SANTÉ & BEAUTÉ.
+- Si l'article ne parle PAS de santé, médecine, bien-être, beauté ou nutrition, réponds avec : {"skip": true}
+- Écris de façon accessible, bienveillante et pratique pour le lecteur.
+- Mets en avant les conseils concrets, les études récentes ou les témoignages.`
     : "";
 
   return `Source URL: ${source.url}
@@ -78,7 +83,7 @@ Génère un article complet en JSON avec cette structure exacte :
   "titre": "Titre accrocheur SEO (max 80 chars)",
   "chapo": "Chapô de 2 phrases max, résumé percutant",
   "contenu": "<p>Corps de l'article en HTML...</p>",
-  "categorieSlug": "actu|sport|politique|createurs|ia",
+  "categorieSlug": "actu|sport|politique|createurs|ia|sante-beaute",
   "sousCategorie": "Sous-catégorie précise ou null",
   "personnageNom": "Prénom Nom de la personnalité principale si l'article parle d'une personne réelle, sinon null",
   "tags": ["tag1", "tag2", "tag3"],
@@ -184,12 +189,17 @@ export async function GET(req: NextRequest) {
         continue;
       }
 
-      // La catégorie "ia" est auto-créée si elle n'existe pas encore
-      if (parsed.categorieSlug === "ia") {
+      // Catégories auto-créées si elles n'existent pas encore
+      if (parsed.categorieSlug === "ia" || parsed.categorieSlug === "sante-beaute") {
+        const cats: Record<string, { nom: string; couleur: string; ordre: number }> = {
+          "ia":           { nom: "IA",             couleur: "#0284C7", ordre: 10 },
+          "sante-beaute": { nom: "Santé & Beauté", couleur: "#00897B", ordre: 7  },
+        };
+        const c = cats[parsed.categorieSlug];
         await prisma.categorie.upsert({
-          where: { slug: "ia" },
+          where: { slug: parsed.categorieSlug },
           update: {},
-          create: { nom: "IA", slug: "ia", couleur: "#0284C7", ordre: 10 },
+          create: { slug: parsed.categorieSlug, ...c },
         });
       }
 

@@ -7,24 +7,26 @@ import { useState, useEffect } from "react";
 import SearchModal from "./SearchModal";
 
 const NAV_ITEMS = [
-  { label: "Actu",          href: "/actu",          couleur: "#E53935" },
-  { label: "Sport",         href: "/sport",         couleur: "#1565C0" },
-  { label: "Politique",     href: "/politique",     couleur: "#6A1B9A" },
-  { label: "Créateurs",     href: "/createurs",     couleur: "#7C3AED" },
-  { label: "IA",            href: "/ia",            couleur: "#0284C7" },
-  { label: "Entrepreneurs", href: "/entrepreneurs", couleur: "#C9A84C" },
+  { label: "Actu",           href: "/actu",          couleur: "#E53935" },
+  { label: "Sport",          href: "/sport",         couleur: "#1565C0" },
+  { label: "Politique",      href: "/politique",     couleur: "#6A1B9A" },
+  { label: "Créateurs",      href: "/createurs",     couleur: "#7C3AED" },
+  { label: "IA",             href: "/ia",            couleur: "#0284C7" },
+  { label: "Santé & Beauté", href: "/sante-beaute",  couleur: "#00897B" },
+  { label: "Entrepreneurs",  href: "/entrepreneurs", couleur: "#C9A84C" },
 ];
 
 const NAV_GROUPES = [
   {
     titre: "Rubriques",
     items: [
-      { label: "Actu",          href: "/actu",          couleur: "#E53935" },
-      { label: "Sport",         href: "/sport",         couleur: "#1565C0" },
-      { label: "Politique",     href: "/politique",     couleur: "#6A1B9A" },
-      { label: "Créateurs",     href: "/createurs",     couleur: "#7C3AED" },
-      { label: "IA",            href: "/ia",            couleur: "#0284C7" },
-      { label: "Entrepreneurs", href: "/entrepreneurs", couleur: "#C9A84C" },
+      { label: "Actu",           href: "/actu",          couleur: "#E53935" },
+      { label: "Sport",          href: "/sport",         couleur: "#1565C0" },
+      { label: "Politique",      href: "/politique",     couleur: "#6A1B9A" },
+      { label: "Créateurs",      href: "/createurs",     couleur: "#7C3AED" },
+      { label: "IA",             href: "/ia",            couleur: "#0284C7" },
+      { label: "Santé & Beauté", href: "/sante-beaute",  couleur: "#00897B" },
+      { label: "Entrepreneurs",  href: "/entrepreneurs", couleur: "#C9A84C" },
     ],
   },
 ];
