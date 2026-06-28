@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import {
   buildFbText, buildIgText,
   nextSlot, getLatestSlotMs,
-  fetchUnsplashImage, fetchInstagramImage,
+  fetchInstagramImage,
 } from "@/lib/social-posting";
 
 export async function POST(req: NextRequest) {
@@ -20,22 +20,18 @@ export async function POST(req: NextRequest) {
   });
   if (!article) return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
 
-  // Image Facebook (originale ou Unsplash landscape)
+  // Même image pour le site, Facebook et Instagram
+  // Si pas d'image : Unsplash carré (compatible Instagram + FB)
   let imageUrl = article.imageUrl;
   if (!imageUrl) {
-    imageUrl = await fetchUnsplashImage(article.tags[0] || article.titre);
+    imageUrl = await fetchInstagramImage(article.tags[0] || article.titre);
     if (imageUrl) {
       await prisma.article.update({ where: { id: articleId }, data: { imageUrl } });
     }
   }
 
-  // Image Instagram : toujours carré 1:1 garanti
-  const igImageUrl = await fetchInstagramImage(article.tags[0] || article.titre) || imageUrl;
-
-  // Prochain créneau disponible (15 min après le dernier élément en file)
   const slot = nextSlot(await getLatestSlotMs());
 
-  // Site + FB + IG tous programmés au même créneau — le cron publie tout ensemble
   await prisma.article.update({
     where: { id: articleId },
     data: { scheduledFor: slot },
@@ -46,8 +42,8 @@ export async function POST(req: NextRequest) {
 
   await prisma.socialQueueItem.createMany({
     data: [
-      { articleId, network: "facebook",  message: fbText, imageUrl,            scheduledAt: slot },
-      { articleId, network: "instagram", message: igText, imageUrl: igImageUrl, scheduledAt: slot },
+      { articleId, network: "facebook",  message: fbText, imageUrl, scheduledAt: slot },
+      { articleId, network: "instagram", message: igText, imageUrl, scheduledAt: slot },
     ],
   });
 
