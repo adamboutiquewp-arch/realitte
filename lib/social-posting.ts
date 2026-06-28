@@ -79,7 +79,8 @@ export function nextSlot(lastMs: number): Date {
 }
 
 export async function getLatestSlotMs(): Promise<number> {
-  const [lastArticle, lastSocial] = await Promise.all([
+  const cutoff = new Date(Date.now() - INTERVAL_MINUTES * 60 * 1000);
+  const [lastPendingArticle, lastPendingSocial, lastPublished] = await Promise.all([
     prisma.article.findFirst({
       where: { statut: "PENDING", scheduledFor: { not: null } },
       orderBy: { scheduledFor: "desc" },
@@ -90,10 +91,17 @@ export async function getLatestSlotMs(): Promise<number> {
       orderBy: { scheduledAt: "desc" },
       select: { scheduledAt: true },
     }),
+    // Articles publiés dans les 15 dernières minutes → on doit attendre avant le suivant
+    prisma.article.findFirst({
+      where: { statut: "PUBLISHED", datePublication: { gte: cutoff } },
+      orderBy: { datePublication: "desc" },
+      select: { datePublication: true },
+    }),
   ]);
   return Math.max(
-    lastArticle?.scheduledFor?.getTime() || 0,
-    lastSocial?.scheduledAt?.getTime() || 0,
+    lastPendingArticle?.scheduledFor?.getTime() || 0,
+    lastPendingSocial?.scheduledAt?.getTime() || 0,
+    lastPublished?.datePublication?.getTime() || 0,
   );
 }
 

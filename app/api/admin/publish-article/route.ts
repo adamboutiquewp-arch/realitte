@@ -5,6 +5,7 @@ import {
   buildFbText, buildIgText,
   nextSlot, getLatestSlotMs,
   fetchInstagramImage, toInstagramUrl,
+  getSocialCredentials, postToFacebook, postToInstagram, SITE_URL,
 } from "@/lib/social-posting";
 
 export async function POST(req: NextRequest) {
@@ -20,8 +21,7 @@ export async function POST(req: NextRequest) {
   });
   if (!article) return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
 
-  // Même image pour le site, Facebook et Instagram
-  // Si pas d'image : Unsplash carré (compatible Instagram + FB)
+  // Image commune pour le site, Facebook et Instagram
   let imageUrl = article.imageUrl;
   if (!imageUrl) {
     imageUrl = await fetchInstagramImage(article.tags[0] || article.titre);
@@ -30,20 +30,57 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const slot = nextSlot(await getLatestSlotMs());
+  const fbText  = buildFbText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags);
+  const igText  = buildIgText(article.titre, article.chapo, article.tags);
+  const articleUrl = `${SITE_URL}/${article.categorie.slug}/${article.slug}`;
+  const igImage = toInstagramUrl(imageUrl);
+
+  const latestMs = await getLatestSlotMs();
+
+  // ── CAS 1 : file vide ET rien publié depuis moins de 15 min → IMMÉDIAT ──
+  if (latestMs === 0) {
+    const now = new Date();
+
+    await prisma.article.update({
+      where: { id: articleId },
+      data: { statut: "PUBLISHED", datePublication: now },
+    });
+
+    const { pageId, pageToken, igUserId } = await getSocialCredentials();
+    let fbOk = false;
+    let igOk = false;
+
+    try {
+      await postToFacebook(pageId, pageToken, fbText, articleUrl, imageUrl);
+      fbOk = true;
+    } catch (err) {
+      console.error("FB immédiat:", err);
+    }
+
+    try {
+      if (igUserId && pageToken && igImage) {
+        await postToInstagram(igUserId, pageToken, igText, igImage);
+        igOk = true;
+      }
+    } catch (err) {
+      console.error("IG immédiat:", err);
+    }
+
+    return NextResponse.json({ ok: true, mode: "immediate", fbOk, igOk });
+  }
+
+  // ── CAS 2 : quelque chose récemment publié ou en file → PROGRAMMER ──
+  const slot = nextSlot(latestMs);
 
   await prisma.article.update({
     where: { id: articleId },
     data: { scheduledFor: slot },
   });
 
-  const fbText = buildFbText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags);
-  const igText = buildIgText(article.titre, article.chapo, article.tags);
-
   await prisma.socialQueueItem.createMany({
     data: [
-      { articleId, network: "facebook",  message: fbText, imageUrl,                      scheduledAt: slot },
-      { articleId, network: "instagram", message: igText, imageUrl: toInstagramUrl(imageUrl), scheduledAt: slot },
+      { articleId, network: "facebook",  message: fbText, imageUrl,   scheduledAt: slot },
+      { articleId, network: "instagram", message: igText, imageUrl: igImage, scheduledAt: slot },
     ],
   });
 
