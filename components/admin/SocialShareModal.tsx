@@ -67,7 +67,7 @@ function buildText(article: Article, network: Network): string {
   }
 }
 
-type PostState = "idle" | "loading" | "success" | "error";
+type PostState = "idle" | "loading" | "success" | "error" | "queued";
 
 export default function SocialShareModal({ article, variant = "list" }: Props) {
   const [open, setOpen] = useState(false);
@@ -118,6 +118,34 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
         setPostState("error");
       } else {
         setPostState("success");
+      }
+    } catch {
+      setPostError("Erreur réseau");
+      setPostState("error");
+    }
+  };
+
+  const addToQueue = async () => {
+    setPostState("loading");
+    setPostError("");
+    try {
+      const res = await fetch("/api/admin/social-queue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "social",
+          articleId: article.id,
+          network,
+          message: currentText,
+          imageUrl: article.imageUrl || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setPostError(data.error || "Erreur inconnue");
+        setPostState("error");
+      } else {
+        setPostState("queued");
       }
     } catch {
       setPostError("Erreur réseau");
@@ -226,26 +254,51 @@ export default function SocialShareModal({ article, variant = "list" }: Props) {
                 </div>
               )}
 
+              {/* Ajouté à la file */}
+              {postState === "queued" && (
+                <div className="px-3 py-2.5 bg-blue-50 border border-blue-200 text-[12px] text-blue-700 font-bold">
+                  ⏱ Ajouté à la file — publication automatique dans ~15 min
+                </div>
+              )}
+
               {/* Boutons action */}
               {network === "facebook" && (
-                <button
-                  onClick={() => { copyOnly(); window.open("https://business.facebook.com/latest/composer/", "_blank"); }}
-                  className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
-                  style={{ backgroundColor: activeNet.color }}
-                >
-                  {activeNet.icon}
-                  Copier &amp; Ouvrir Meta Business Suite
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={addToQueue}
+                    disabled={postState === "loading" || postState === "queued"}
+                    className="flex-1 py-3 text-[13px] font-bold uppercase tracking-widest transition-colors border-2 border-[#1877F2] text-[#1877F2] hover:bg-blue-50 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    ⏱ File d&apos;attente
+                  </button>
+                  <button
+                    onClick={() => { copyOnly(); window.open("https://business.facebook.com/latest/composer/", "_blank"); }}
+                    className="flex-1 py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                    style={{ backgroundColor: activeNet.color }}
+                  >
+                    {activeNet.icon}
+                    Maintenant
+                  </button>
+                </div>
               )}
               {network === "instagram" && (
-                <button
-                  onClick={() => { copyOnly(); window.open("https://business.facebook.com/latest/composer/", "_blank"); }}
-                  className="w-full py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
-                  style={{ backgroundColor: activeNet.color }}
-                >
-                  {activeNet.icon}
-                  Copier &amp; Ouvrir Meta Business Suite
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={addToQueue}
+                    disabled={postState === "loading" || postState === "queued"}
+                    className="flex-1 py-3 text-[13px] font-bold uppercase tracking-widest transition-colors border-2 border-[#E1306C] text-[#E1306C] hover:bg-pink-50 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    ⏱ File d&apos;attente
+                  </button>
+                  <button
+                    onClick={() => { copyOnly(); window.open("https://business.facebook.com/latest/composer/", "_blank"); }}
+                    className="flex-1 py-3 text-white text-[13px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                    style={{ backgroundColor: activeNet.color }}
+                  >
+                    {activeNet.icon}
+                    Maintenant
+                  </button>
+                </div>
               )}
               {network === "tiktok" && (
                 <button

@@ -13,6 +13,26 @@ const COULEURS_PRESET = [
   "#6A1B9A", "#4A148C", "#00838F", "#006064",
 ];
 
+const CATEGORIES_DEFAUT = [
+  { nom: "People",         slug: "people",      couleur: "#E91E63", ordre: 6 },
+  { nom: "Santé & Beauté", slug: "sante-beaute",couleur: "#00897B", ordre: 7 },
+  { nom: "Fait Divers",    slug: "fait-divers", couleur: "#455A64", ordre: 8 },
+  { nom: "Créateurs",      slug: "createurs",   couleur: "#7C3AED", ordre: 9 },
+  { nom: "IA",             slug: "ia",          couleur: "#0284C7", ordre: 10 },
+];
+
+async function restaurerCategories() {
+  "use server";
+  for (const cat of CATEGORIES_DEFAUT) {
+    const existing = await prisma.categorie.findUnique({ where: { slug: cat.slug } });
+    if (!existing) {
+      await prisma.categorie.create({ data: cat });
+    }
+  }
+  revalidatePath("/admin/categories");
+  redirect("/admin/categories");
+}
+
 async function createCategorie(formData: FormData) {
   "use server";
   const nom = (formData.get("nom") as string)?.trim();
@@ -65,9 +85,19 @@ export default async function CategoriesPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-[800px]">
-      <div className="mb-8">
-        <h1 className="text-[22px] font-black text-[#111]">Catégories</h1>
-        <p className="text-[13px] text-[#999] mt-0.5">{categories.length} catégorie{categories.length > 1 ? "s" : ""}</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-[22px] font-black text-[#111]">Catégories</h1>
+          <p className="text-[13px] text-[#999] mt-0.5">{categories.length} catégorie{categories.length > 1 ? "s" : ""}</p>
+        </div>
+        <form action={restaurerCategories}>
+          <button
+            type="submit"
+            className="px-4 py-2 text-[12px] font-bold border border-[#E0E0E0] text-[#666] hover:border-[#111] hover:text-[#111] rounded transition-colors"
+          >
+            Restaurer catégories par défaut
+          </button>
+        </form>
       </div>
 
       {error === "articles_existants" && (

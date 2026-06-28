@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/utils";
 import DeleteArticleButton from "@/components/admin/DeleteArticleButton";
 import FeaturedCategorieButton from "@/components/admin/FeaturedCategorieButton";
 import ToggleArticleButton from "@/components/admin/ToggleArticleButton";
+import QueueArticleButton from "@/components/admin/QueueArticleButton";
 import SocialShareModal from "@/components/admin/SocialShareModal";
 
 export const metadata: Metadata = { title: "Articles" };
@@ -49,7 +50,12 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
   const [articles, total, categories] = await Promise.all([
     prisma.article.findMany({
       where,
-      include: { categorie: { select: { nom: true, couleur: true, slug: true } } },
+      select: {
+        id: true, titre: true, chapo: true, slug: true, statut: true,
+        dateCreation: true, scheduledFor: true, imageUrl: true, tags: true,
+        categorieId: true, featuredCategorie: true,
+        categorie: { select: { nom: true, couleur: true, slug: true } },
+      },
       orderBy: { dateCreation: "desc" },
       take: perPage,
       skip,
@@ -181,6 +187,14 @@ export default async function AdminArticlesPage({ searchParams }: PageProps) {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2 flex-wrap">
+                        {a.statut === "PENDING" && !a.scheduledFor && (
+                          <QueueArticleButton id={a.id} />
+                        )}
+                        {a.statut === "PENDING" && a.scheduledFor && (
+                          <span className="px-2 py-1 text-[10px] font-bold rounded bg-blue-50 text-blue-700 border border-blue-200" title={`Programmé : ${new Date(a.scheduledFor).toLocaleString("fr-FR")}`}>
+                            ⏱ Programmé
+                          </span>
+                        )}
                         {(a.statut === "PUBLISHED" || a.statut === "DRAFT") && (
                           <ToggleArticleButton id={a.id} statut={a.statut} />
                         )}

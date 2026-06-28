@@ -21,6 +21,12 @@ enum StatutAvis {
   REJECTED
 }
 
+enum SocialQueueStatut {
+  PENDING
+  DONE
+  ERROR
+}
+
 enum RoleAdmin {
   SUPER_ADMIN
   EDITEUR
@@ -73,9 +79,12 @@ model Article {
   imageClean        Boolean       @default(false)
   dateCreation    DateTime      @default(now())
   datePublication DateTime?
+  scheduledFor    DateTime?
   avis            Avis[]
+  socialQueue     SocialQueueItem[]
 
   @@index([statut, datePublication])
+  @@index([statut, scheduledFor])
   @@index([categorieId, statut])
   @@index([categorieId, featuredCategorie])
   @@index([slug])
@@ -166,6 +175,23 @@ model EntrepreneurSemaine {
   dateCreation         DateTime @default(now())
 
   @@map("entrepreneur_semaine")
+}
+
+model SocialQueueItem {
+  id          String            @id @default(cuid())
+  articleId   String
+  article     Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  network     String
+  message     String            @db.Text
+  imageUrl    String?
+  statut      SocialQueueStatut @default(PENDING)
+  scheduledAt DateTime
+  processedAt DateTime?
+  erreur      String?
+  createdAt   DateTime          @default(now())
+
+  @@index([statut, scheduledAt])
+  @@map("social_queue_items")
 }
 
 model PipelineLog {
