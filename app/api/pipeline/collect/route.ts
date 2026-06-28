@@ -114,6 +114,9 @@ function extractSourceImage(item: Parser.Item & CustomItem): string | null {
   return null;
 }
 
+const IA_WINDOW_HOURS    = 72;
+const DEFAULT_WINDOW_HOURS = 10;
+
 export async function GET(req: NextRequest) {
   const cronSecret = req.headers.get("x-cron-secret");
   if (cronSecret !== process.env.CRON_SECRET) {
@@ -139,11 +142,19 @@ export async function GET(req: NextRequest) {
   const errors: string[] = [];
 
   for (const source of sources) {
+    // Fenêtre temporelle : 72h pour IA, 10h pour le reste
+    const windowHours = source.categorie === "ia" ? IA_WINDOW_HOURS : DEFAULT_WINDOW_HOURS;
+    const cutoff = new Date(Date.now() - windowHours * 60 * 60 * 1000);
+
     try {
       const feed = await parser.parseURL(source.url);
 
-      for (const item of feed.items.slice(0, 10)) {
+      for (const item of feed.items.slice(0, 20)) {
         if (!item.link || !item.title) continue;
+
+        // Filtre par date de publication
+        const pubDate = item.isoDate ? new Date(item.isoDate) : item.pubDate ? new Date(item.pubDate as string) : null;
+        if (pubDate && pubDate < cutoff) continue;
 
         const existing = await prisma.sourceBrute.findFirst({
           where: { url: item.link },
