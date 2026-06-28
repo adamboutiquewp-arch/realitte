@@ -40,6 +40,26 @@ async function getStats() {
     prisma.pipelineLog.findFirst({ orderBy: { dateCreation: "desc" } }),
   ]);
 
+  // File d'attente — table peut ne pas encore exister (avant déploiement)
+  let articlesEnFile: { id: string; titre: string; scheduledFor: Date | null; categorie: { nom: string; couleur: string } }[] = [];
+  let socialEnFile: { id: string; network: string; scheduledAt: Date; article: { titre: string } }[] = [];
+  try {
+    [articlesEnFile, socialEnFile] = await Promise.all([
+      prisma.article.findMany({
+        where: { statut: "PENDING", scheduledFor: { not: null } },
+        select: { id: true, titre: true, scheduledFor: true, categorie: { select: { nom: true, couleur: true } } },
+        orderBy: { scheduledFor: "asc" },
+        take: 5,
+      }),
+      prisma.socialQueueItem.findMany({
+        where: { statut: "PENDING" },
+        select: { id: true, network: true, scheduledAt: true, article: { select: { titre: true } } },
+        orderBy: { scheduledAt: "asc" },
+        take: 5,
+      }),
+    ]);
+  } catch { /* DB pas encore à jour */ }
+
   return {
     totalPublies,
     totalPending,
@@ -50,6 +70,8 @@ async function getStats() {
     dernieresPending,
     totalAvisPending,
     lastLog,
+    articlesEnFile,
+    socialEnFile,
   };
 }
 
@@ -222,6 +244,51 @@ export default async function AdminDashboard() {
           )}
         </div>
       </div>
+
+      {/* File d'attente */}
+      {(stats.articlesEnFile.length > 0 || stats.socialEnFile.length > 0) && (
+        <div className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden mb-6">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0F0F0]">
+            <div className="flex items-center gap-2.5">
+              <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <h2 className="text-[14px] font-bold text-[#111]">File d&apos;attente</h2>
+              <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                {stats.articlesEnFile.length + stats.socialEnFile.length}
+              </span>
+            </div>
+            <Link href="/admin/social-queue" className="text-[11px] font-semibold text-[#bbb] hover:text-blue-600 transition-colors">
+              Tout voir →
+            </Link>
+          </div>
+          <ul className="divide-y divide-[#F8F8F8]">
+            {stats.articlesEnFile.map((a) => (
+              <li key={a.id} className="px-6 py-3 flex items-center gap-3">
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: a.categorie.couleur }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-[#111] line-clamp-1">{a.titre}</p>
+                  <p className="text-[11px] text-[#bbb]">{a.categorie.nom}</p>
+                </div>
+                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 flex-shrink-0">
+                  Article · {a.scheduledFor ? new Date(a.scheduledFor).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : ""}
+                </span>
+              </li>
+            ))}
+            {stats.socialEnFile.map((p) => (
+              <li key={p.id} className="px-6 py-3 flex items-center gap-3">
+                <span className="w-2 h-2 rounded-full bg-pink-500 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-[#111] line-clamp-1">{p.article.titre}</p>
+                </div>
+                <span className="text-[11px] font-bold text-pink-600 bg-pink-50 px-2 py-1 rounded border border-pink-100 flex-shrink-0 capitalize">
+                  {p.network} · {new Date(p.scheduledAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Pipeline + Actions rapides */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

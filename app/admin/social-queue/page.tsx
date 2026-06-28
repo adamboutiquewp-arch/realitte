@@ -25,38 +25,68 @@ const NETWORK_COLOR: Record<string, string> = {
 export default async function SocialQueuePage() {
   const now = new Date();
 
-  const [articles, socialPosts, recentDone, recentErrors] = await Promise.all([
-    prisma.article.findMany({
-      where: { statut: "PENDING", scheduledFor: { not: null } },
-      select: {
-        id: true, titre: true, scheduledFor: true,
-        categorie: { select: { nom: true, couleur: true } },
-      },
-      orderBy: { scheduledFor: "asc" },
-    }),
-    prisma.socialQueueItem.findMany({
-      where: { statut: "PENDING" },
-      select: {
-        id: true, network: true, message: true, scheduledAt: true,
-        article: { select: { titre: true } },
-      },
-      orderBy: { scheduledAt: "asc" },
-    }),
-    prisma.socialQueueItem.findMany({
-      where: { statut: "DONE" },
-      select: { id: true, network: true, processedAt: true, article: { select: { titre: true } } },
-      orderBy: { processedAt: "desc" },
-      take: 5,
-    }),
-    prisma.socialQueueItem.findMany({
-      where: { statut: "ERROR" },
-      select: { id: true, network: true, processedAt: true, erreur: true, article: { select: { titre: true } } },
-      orderBy: { processedAt: "desc" },
-      take: 5,
-    }),
-  ]);
+  let articles: {
+    id: string; titre: string; scheduledFor: Date | null;
+    categorie: { nom: string; couleur: string };
+  }[] = [];
+  let socialPosts: {
+    id: string; network: string; message: string; scheduledAt: Date;
+    article: { titre: string };
+  }[] = [];
+  let recentDone: { id: string; network: string; processedAt: Date | null; article: { titre: string } }[] = [];
+  let recentErrors: { id: string; network: string; processedAt: Date | null; erreur: string | null; article: { titre: string } }[] = [];
+  let dbReady = true;
+
+  try {
+    [articles, socialPosts, recentDone, recentErrors] = await Promise.all([
+      prisma.article.findMany({
+        where: { statut: "PENDING", scheduledFor: { not: null } },
+        select: {
+          id: true, titre: true, scheduledFor: true,
+          categorie: { select: { nom: true, couleur: true } },
+        },
+        orderBy: { scheduledFor: "asc" },
+      }),
+      prisma.socialQueueItem.findMany({
+        where: { statut: "PENDING" },
+        select: {
+          id: true, network: true, message: true, scheduledAt: true,
+          article: { select: { titre: true } },
+        },
+        orderBy: { scheduledAt: "asc" },
+      }),
+      prisma.socialQueueItem.findMany({
+        where: { statut: "DONE" },
+        select: { id: true, network: true, processedAt: true, article: { select: { titre: true } } },
+        orderBy: { processedAt: "desc" },
+        take: 5,
+      }),
+      prisma.socialQueueItem.findMany({
+        where: { statut: "ERROR" },
+        select: { id: true, network: true, processedAt: true, erreur: true, article: { select: { titre: true } } },
+        orderBy: { processedAt: "desc" },
+        take: 5,
+      }),
+    ]);
+  } catch {
+    dbReady = false;
+  }
 
   const totalPending = articles.length + socialPosts.length;
+
+  if (!dbReady) {
+    return (
+      <div className="max-w-[900px]">
+        <div className="mb-8">
+          <h1 className="text-[22px] font-black text-[#111]">File d&apos;attente</h1>
+        </div>
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 text-[13px] text-orange-800">
+          <p className="font-bold mb-1">Base de données pas encore à jour</p>
+          <p>La table de file d&apos;attente n&apos;existe pas encore. Déploie sur Vercel pour l&apos;activer — le build applique automatiquement les changements de base de données.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[900px]">
