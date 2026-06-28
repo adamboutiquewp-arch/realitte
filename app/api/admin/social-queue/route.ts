@@ -3,10 +3,24 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
 const INTERVAL_MINUTES = 15;
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
 
 function nextSlot(lastDate: Date | null): Date {
   const base = lastDate && lastDate > new Date() ? lastDate : new Date();
   return new Date(base.getTime() + INTERVAL_MINUTES * 60 * 1000);
+}
+
+function buildSocialText(
+  titre: string, chapo: string, slug: string, categorieSlug: string, tags: string[],
+  network: "facebook" | "instagram"
+): string {
+  const url = `${SITE_URL}/${categorieSlug}/${slug}`;
+  const hashtags5 = tags.slice(0, 5).map((t) => `#${t.replace(/\s+/g, "")}`).join(" ");
+  const hashtags15 = tags.slice(0, 15).map((t) => `#${t.replace(/\s+/g, "")}`).join(" ");
+  if (network === "facebook") {
+    return [titre, "", chapo, "", `👉 ${url}`, hashtags5 ? `\n${hashtags5}` : ""].join("\n").trim();
+  }
+  return [titre, "", chapo, "", "🔗 Lien en bio", hashtags15 ? `\n.\n.\n.\n${hashtags15}` : ""].join("\n").trim();
 }
 
 // GET — liste la file d'attente complète
@@ -48,24 +62,79 @@ export async function POST(req: NextRequest) {
     const { articleId } = body;
     if (!articleId) return NextResponse.json({ error: "articleId requis" }, { status: 400 });
 
-    const article = await prisma.article.findUnique({ where: { id: articleId } });
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+      include: { categorie: { select: { slug: true } } },
+    });
     if (!article) return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
-    if (article.statut !== "PENDING") return NextResponse.json({ error: "L'article n'est pas en attente" }, { status: 400 });
+    if (article.statut !== "PENDING") return NextResponse.json({ error: "L'article n'est pas en attente (statut: " + article.statut + ")" }, { status: 400 });
 
-    // Trouve le dernier créneau occupé
-    const last = await prisma.article.findFirst({
+    // Trouve le dernier créneau pour les articles
+    const lastArticle = await prisma.article.findFirst({
       where: { statut: "PENDING", scheduledFor: { not: null } },
       orderBy: { scheduledFor: "desc" },
       select: { scheduledFor: true },
     });
+    const articleSlot = nextSlot(lastArticle?.scheduledFor ?? null);
 
-    const slot = nextSlot(last?.scheduledFor ?? null);
+    // Trouve le dernier créneau pour les posts sociaux
+    const lastSocial = await prisma.socialQueueItem.findFirst({
+      where: { statut: "PENDING" },
+      orderBy: { scheduledAt: "desc" },
+      select: { scheduledAt: true },
+    });
+    // Les posts sociaux se programment au même moment que l'article (traités après dans le même cycle)
+    const socialBase = lastSocial?.scheduledAt && lastSocial.scheduledAt > articleSlot ? lastSocial.scheduledAt : articleSlot;
+
     await prisma.article.update({
       where: { id: articleId },
-      data: { scheduledFor: slot },
+      data: { scheduledFor: articleSlot },
     });
 
-    return NextResponse.json({ ok: true, scheduledFor: slot });
+    // Crée automatiquement les posts FB et Instagram dans la file
+    const fbText = buildSocialText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags, "facebook");
+    const igText = buildSocialText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags, "instagram");
+
+    await prisma.socialQueueItem.createMany({
+      data: [
+        { articleId, network: "facebook",  message: fbText, imageUrl: article.imageUrl, scheduledAt: socialBase },
+        { articleId, network: "instagram", message: igText, imageUrl: article.imageUrl, scheduledAt: new Date(socialBase.getTime() + INTERVAL_MINUTES * 60 * 1000) },
+      ],
+    });
+
+    return NextResponse.json({ ok: true, scheduledFor: articleSlot, socialPosts: 2 });
+  }
+
+  // Appelé quand on publie directement un article (sans passer par la file)
+  if (type === "social-auto") {
+    const { articleId } = body;
+    if (!articleId) return NextResponse.json({ error: "articleId requis" }, { status: 400 });
+
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+      include: { categorie: { select: { slug: true } } },
+    });
+    if (!article) return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
+
+    const lastSocial = await prisma.socialQueueItem.findFirst({
+      where: { statut: "PENDING" },
+      orderBy: { scheduledAt: "desc" },
+      select: { scheduledAt: true },
+    });
+    const slot1 = nextSlot(lastSocial?.scheduledAt ?? null);
+    const slot2 = new Date(slot1.getTime() + INTERVAL_MINUTES * 60 * 1000);
+
+    const fbText = buildSocialText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags, "facebook");
+    const igText = buildSocialText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags, "instagram");
+
+    await prisma.socialQueueItem.createMany({
+      data: [
+        { articleId, network: "facebook",  message: fbText, imageUrl: article.imageUrl, scheduledAt: slot1 },
+        { articleId, network: "instagram", message: igText, imageUrl: article.imageUrl, scheduledAt: slot2 },
+      ],
+    });
+
+    return NextResponse.json({ ok: true, socialPosts: 2 });
   }
 
   if (type === "social") {

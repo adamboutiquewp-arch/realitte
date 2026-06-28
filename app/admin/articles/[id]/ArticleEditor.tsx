@@ -152,20 +152,28 @@ export default function ArticleEditor({ article, categories }: Props) {
     setSaving(true);
     setMessage("");
     try {
+      const tags = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
       const res = await fetch(`/api/articles/${article.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
-          statut: newStatut,
-        }),
+        body: JSON.stringify({ ...form, tags, statut: newStatut }),
       });
       const data = await res.json();
       if (res.ok) {
-        setMessage(newStatut ? `Article ${newStatut === "PUBLISHED" ? "publié" : newStatut === "REJECTED" ? "rejeté" : "sauvegardé"} !` : "Sauvegardé !");
-        if (newStatut === "PUBLISHED" || newStatut === "REJECTED") {
+        if (newStatut === "PUBLISHED") {
+          // Ajoute automatiquement les posts FB + Instagram à la file réseaux sociaux
+          fetch("/api/admin/social-queue", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "social-auto", articleId: article.id }),
+          }).catch(() => {});
+          setMessage("Article publié ! Posts FB + Instagram ajoutés à la file réseaux sociaux.");
+          setTimeout(() => router.push("/admin/articles"), 1500);
+        } else if (newStatut === "REJECTED") {
+          setMessage("Article rejeté.");
           setTimeout(() => router.push("/admin/articles"), 1000);
+        } else {
+          setMessage(newStatut ? "Sauvegardé !" : "Sauvegardé !");
         }
       } else {
         setMessage(data.error || "Erreur lors de la sauvegarde.");
