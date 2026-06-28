@@ -16,6 +16,25 @@ export async function fetchUnsplashImage(query: string): Promise<string | null> 
     return null;
   }
 }
+
+// Image carrée 1:1 garantie pour Instagram (ratio imposé par l'API Meta)
+export async function fetchInstagramImage(query: string): Promise<string | null> {
+  if (!process.env.UNSPLASH_ACCESS_KEY) return null;
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=squarish`,
+      { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const raw = data.results?.[0]?.urls?.raw;
+    if (!raw) return null;
+    // Force 1080x1080 carré via paramètres Imgix (Unsplash)
+    return `${raw}&w=1080&h=1080&fit=crop&crop=center&auto=format&q=80`;
+  } catch {
+    return null;
+  }
+}
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
 export const INTERVAL_MINUTES = 15;
 
