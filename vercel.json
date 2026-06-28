@@ -7,10 +7,6 @@
     {
       "path": "/api/pipeline/generate",
       "schedule": "30 9 * * *"
-    },
-    {
-      "path": "/api/cron/social-queue",
-      "schedule": "*/5 * * * *"
     }
   ]
 }
