@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { fetchUnsplashImage } from "@/lib/social-posting";
 
 const INTERVAL_MINUTES = 15;
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
@@ -95,10 +96,19 @@ export async function POST(req: NextRequest) {
     const fbText = buildSocialText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags, "facebook");
     const igText = buildSocialText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags, "instagram");
 
+    // Garantit une image pour Instagram
+    let imageUrl = article.imageUrl;
+    if (!imageUrl) {
+      imageUrl = await fetchUnsplashImage(article.tags[0] || article.titre);
+      if (imageUrl) {
+        await prisma.article.update({ where: { id: articleId }, data: { imageUrl } });
+      }
+    }
+
     await prisma.socialQueueItem.createMany({
       data: [
-        { articleId, network: "facebook",  message: fbText, imageUrl: article.imageUrl, scheduledAt: socialBase },
-        { articleId, network: "instagram", message: igText, imageUrl: article.imageUrl, scheduledAt: new Date(socialBase.getTime() + INTERVAL_MINUTES * 60 * 1000) },
+        { articleId, network: "facebook",  message: fbText, imageUrl, scheduledAt: socialBase },
+        { articleId, network: "instagram", message: igText, imageUrl, scheduledAt: new Date(socialBase.getTime() + INTERVAL_MINUTES * 60 * 1000) },
       ],
     });
 
@@ -127,10 +137,18 @@ export async function POST(req: NextRequest) {
     const fbText = buildSocialText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags, "facebook");
     const igText = buildSocialText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags, "instagram");
 
+    let imageUrl = article.imageUrl;
+    if (!imageUrl) {
+      imageUrl = await fetchUnsplashImage(article.tags[0] || article.titre);
+      if (imageUrl) {
+        await prisma.article.update({ where: { id: articleId }, data: { imageUrl } });
+      }
+    }
+
     await prisma.socialQueueItem.createMany({
       data: [
-        { articleId, network: "facebook",  message: fbText, imageUrl: article.imageUrl, scheduledAt: slot1 },
-        { articleId, network: "instagram", message: igText, imageUrl: article.imageUrl, scheduledAt: slot2 },
+        { articleId, network: "facebook",  message: fbText, imageUrl, scheduledAt: slot1 },
+        { articleId, network: "instagram", message: igText, imageUrl, scheduledAt: slot2 },
       ],
     });
 

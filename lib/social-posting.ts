@@ -1,6 +1,21 @@
 import { prisma } from "@/lib/prisma";
 
 export const FB_API = "https://graph.facebook.com/v19.0";
+
+export async function fetchUnsplashImage(query: string): Promise<string | null> {
+  if (!process.env.UNSPLASH_ACCESS_KEY) return null;
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.results?.[0]?.urls?.regular || null;
+  } catch {
+    return null;
+  }
+}
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
 export const INTERVAL_MINUTES = 15;
 

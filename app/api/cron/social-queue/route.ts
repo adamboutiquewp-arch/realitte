@@ -2,9 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSocialCredentials, postToFacebook, postToInstagram, SITE_URL } from "@/lib/social-posting";
 
+function isAuthorized(req: NextRequest): boolean {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) return false;
+  // Vercel envoie Authorization: Bearer <secret> pour les crons automatiques
+  if (req.headers.get("authorization") === `Bearer ${cronSecret}`) return true;
+  // Déclenchement manuel via l'admin
+  if (req.headers.get("x-cron-secret") === cronSecret) return true;
+  return false;
+}
+
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("x-cron-secret");
-  if (secret !== process.env.CRON_SECRET) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 

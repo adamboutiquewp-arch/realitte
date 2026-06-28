@@ -116,27 +116,26 @@ export async function GET() {
     checks.push({ label: "Token Facebook — validité", ok: false, detail: "Token manquant — test impossible" });
   }
 
-  // 6. Test permissions du token
-  if (pageToken.length > 0) {
+  // 6. Droits du Page Access Token (via le champ tasks de la page)
+  if (pageId && pageToken) {
     try {
-      const res = await fetch(`${FB_API}/me/permissions?access_token=${pageToken}`);
+      const res = await fetch(`${FB_API}/${pageId}?fields=tasks&access_token=${pageToken}`);
       const data = await res.json();
       if (data.error) {
-        checks.push({ label: "Permissions Facebook", ok: false, detail: data.error.message });
+        checks.push({ label: "Droits de publication (Page Token)", ok: false, detail: data.error.message });
       } else {
-        const perms: string[] = (data.data || [])
-          .filter((p: { status: string }) => p.status === "granted")
-          .map((p: { permission: string }) => p.permission);
-        const needed = ["pages_manage_posts", "pages_read_engagement"];
-        const missing = needed.filter((p) => !perms.includes(p));
-        if (missing.length > 0) {
-          checks.push({ label: "Permissions Facebook", ok: false, detail: `Permissions manquantes : ${missing.join(", ")}` });
-        } else {
-          checks.push({ label: "Permissions Facebook", ok: true, detail: `OK : ${perms.join(", ")}` });
-        }
+        const tasks: string[] = data.tasks || [];
+        const canPublish = tasks.includes("CREATE_CONTENT") || tasks.includes("MANAGE");
+        checks.push({
+          label: "Droits de publication (Page Token)",
+          ok: canPublish,
+          detail: canPublish
+            ? `Droits OK : ${tasks.join(", ")}`
+            : `Droits insuffisants pour publier — tâches disponibles : ${tasks.join(", ") || "aucune"}`,
+        });
       }
     } catch {
-      checks.push({ label: "Permissions Facebook", ok: false, detail: "Impossible de vérifier les permissions" });
+      checks.push({ label: "Droits de publication (Page Token)", ok: false, detail: "Impossible de vérifier les droits" });
     }
   }
 
