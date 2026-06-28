@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import {
   buildFbText, buildIgText,
-  nextSlot, getLatestSlotMs, SITE_URL,
+  nextSlot, getLatestSlotMs,
   fetchUnsplashImage, fetchInstagramImage,
 } from "@/lib/social-posting";
 
@@ -20,15 +20,7 @@ export async function POST(req: NextRequest) {
   });
   if (!article) return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
 
-  const now = new Date();
-
-  // 1. Publier l'article IMMÉDIATEMENT sur le site
-  await prisma.article.update({
-    where: { id: articleId },
-    data: { statut: "PUBLISHED", datePublication: now },
-  });
-
-  // 2. Image Facebook (originale ou Unsplash landscape)
+  // Image Facebook (originale ou Unsplash landscape)
   let imageUrl = article.imageUrl;
   if (!imageUrl) {
     imageUrl = await fetchUnsplashImage(article.tags[0] || article.titre);
@@ -37,13 +29,20 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 3. Image Instagram : toujours carré 1:1 garanti via Unsplash
+  // Image Instagram : toujours carré 1:1 garanti
   const igImageUrl = await fetchInstagramImage(article.tags[0] || article.titre) || imageUrl;
 
-  // 4. FB + IG toujours en file — jamais de post immédiat (évite les bugs de timing et les erreurs Meta)
+  // Prochain créneau disponible (15 min après le dernier élément en file)
+  const slot = nextSlot(await getLatestSlotMs());
+
+  // Site + FB + IG tous programmés au même créneau — le cron publie tout ensemble
+  await prisma.article.update({
+    where: { id: articleId },
+    data: { scheduledFor: slot },
+  });
+
   const fbText = buildFbText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags);
   const igText = buildIgText(article.titre, article.chapo, article.tags);
-  const slot = nextSlot(await getLatestSlotMs());
 
   await prisma.socialQueueItem.createMany({
     data: [
