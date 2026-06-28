@@ -153,6 +153,42 @@ export default function ArticleEditor({ article, categories }: Props) {
     setMessage("");
     try {
       const tags = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
+
+      if (newStatut === "PUBLISHED") {
+        // D'abord sauvegarder le contenu (sans changer le statut)
+        await fetch(`/api/articles/${article.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, tags }),
+        });
+        // Puis publier via la logique file d'attente intelligente
+        const res = await fetch("/api/admin/publish-article", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ articleId: article.id }),
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          if (data.mode === "immediate") {
+            const social = data.fbOk && data.igOk
+              ? "✓ Publié sur le site + Facebook + Instagram !"
+              : data.fbOk
+              ? "✓ Publié sur le site + Facebook. (Instagram : vérifier la file)"
+              : "✓ Publié sur le site. (Réseaux sociaux : vérifier la file)";
+            setMessage(social);
+          } else {
+            const d = new Date(data.scheduledFor);
+            const heure = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+            setMessage(`✓ En file — publication sur le site + réseaux sociaux à ${heure}`);
+          }
+          setTimeout(() => router.push("/admin/articles"), 2000);
+        } else {
+          setMessage(data.error || "Erreur lors de la publication.");
+        }
+        return;
+      }
+
+      // Autres cas : Sauvegarder, Brouillon, Rejeter
       const res = await fetch(`/api/articles/${article.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -160,20 +196,11 @@ export default function ArticleEditor({ article, categories }: Props) {
       });
       const data = await res.json();
       if (res.ok) {
-        if (newStatut === "PUBLISHED") {
-          // Ajoute automatiquement les posts FB + Instagram à la file réseaux sociaux
-          fetch("/api/admin/social-queue", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type: "social-auto", articleId: article.id }),
-          }).catch(() => {});
-          setMessage("Article publié ! Posts FB + Instagram ajoutés à la file réseaux sociaux.");
-          setTimeout(() => router.push("/admin/articles"), 1500);
-        } else if (newStatut === "REJECTED") {
+        if (newStatut === "REJECTED") {
           setMessage("Article rejeté.");
           setTimeout(() => router.push("/admin/articles"), 1000);
         } else {
-          setMessage(newStatut ? "Sauvegardé !" : "Sauvegardé !");
+          setMessage("Sauvegardé !");
         }
       } else {
         setMessage(data.error || "Erreur lors de la sauvegarde.");
