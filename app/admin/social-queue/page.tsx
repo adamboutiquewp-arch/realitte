@@ -223,8 +223,9 @@ export default async function SocialQueuePage() {
       {/* Historique */}
       {(recentDone.length > 0 || recentErrors.length > 0) && (
         <div className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#F0F0F0]">
+          <div className="px-6 py-4 border-b border-[#F0F0F0] flex items-center justify-between">
             <h2 className="text-[14px] font-bold text-[#111]">Historique récent</h2>
+            <QueueActions variant="clear-history" />
           </div>
           <div className="p-4 space-y-2">
             {recentErrors.map((e) => (

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface Props {
-  variant?: "remove-article" | "remove-social" | "reset-all";
+  variant?: "remove-article" | "remove-social" | "reset-all" | "clear-history";
   articleId?: string;
   socialId?: string;
 }
@@ -57,6 +57,14 @@ export default function QueueActions({ variant, articleId, socialId }: Props) {
     setLoading(false);
   };
 
+  const clearHistory = async () => {
+    if (!confirm("Supprimer tout l'historique (posts publiés et erreurs) ?")) return;
+    setLoading(true);
+    await fetch("/api/admin/social-queue-history", { method: "DELETE" });
+    router.refresh();
+    setLoading(false);
+  };
+
   if (variant === "remove-article") {
     return (
       <button
@@ -77,6 +85,18 @@ export default function QueueActions({ variant, articleId, socialId }: Props) {
         className="px-2.5 py-1 text-[11px] font-bold rounded text-[#999] hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors disabled:opacity-50"
       >
         {loading ? "…" : "Retirer"}
+      </button>
+    );
+  }
+
+  if (variant === "clear-history") {
+    return (
+      <button
+        onClick={clearHistory}
+        disabled={loading}
+        className="px-3 py-1.5 text-[11px] font-bold rounded border border-[#EBEBEB] text-[#999] hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors disabled:opacity-50"
+      >
+        {loading ? "…" : "Vider l'historique"}
       </button>
     );
   }
