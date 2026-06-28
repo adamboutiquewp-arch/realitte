@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { fetchInstagramImage } from "@/lib/social-posting";
+import { fetchInstagramImage, toInstagramUrl } from "@/lib/social-posting";
 
 const INTERVAL_MINUTES = 15;
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
@@ -107,8 +107,8 @@ export async function POST(req: NextRequest) {
 
     await prisma.socialQueueItem.createMany({
       data: [
-        { articleId, network: "facebook",  message: fbText, imageUrl, scheduledAt: socialBase },
-        { articleId, network: "instagram", message: igText, imageUrl, scheduledAt: socialBase },
+        { articleId, network: "facebook",  message: fbText, imageUrl,                      scheduledAt: socialBase },
+        { articleId, network: "instagram", message: igText, imageUrl: toInstagramUrl(imageUrl), scheduledAt: socialBase },
       ],
     });
 
@@ -147,8 +147,8 @@ export async function POST(req: NextRequest) {
 
     await prisma.socialQueueItem.createMany({
       data: [
-        { articleId, network: "facebook",  message: fbText, imageUrl, scheduledAt: slot1 },
-        { articleId, network: "instagram", message: igText, imageUrl, scheduledAt: slot2 },
+        { articleId, network: "facebook",  message: fbText, imageUrl,                      scheduledAt: slot1 },
+        { articleId, network: "instagram", message: igText, imageUrl: toInstagramUrl(imageUrl), scheduledAt: slot2 },
       ],
     });
 

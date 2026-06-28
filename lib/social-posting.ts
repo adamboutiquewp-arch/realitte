@@ -29,11 +29,17 @@ export async function fetchInstagramImage(query: string): Promise<string | null>
     const data = await res.json();
     const raw = data.results?.[0]?.urls?.raw;
     if (!raw) return null;
-    // Force 1080x1080 carré via paramètres Imgix (Unsplash)
     return `${raw}&w=1080&h=1080&fit=crop&crop=center&auto=format&q=80`;
   } catch {
     return null;
   }
+}
+
+// Redimensionne automatiquement n'importe quelle image en 1080x1080 pour Instagram
+// via wsrv.nl (service gratuit de transformation d'image par URL)
+export function toInstagramUrl(imageUrl: string | null): string | null {
+  if (!imageUrl) return null;
+  return `https://wsrv.nl/?url=${encodeURIComponent(imageUrl)}&w=1080&h=1080&fit=cover&a=center&output=jpg&q=85`;
 }
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
 export const INTERVAL_MINUTES = 15;

@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import {
   buildFbText, buildIgText,
   nextSlot, getLatestSlotMs,
-  fetchInstagramImage,
+  fetchInstagramImage, toInstagramUrl,
 } from "@/lib/social-posting";
 
 export async function POST(req: NextRequest) {
@@ -42,8 +42,8 @@ export async function POST(req: NextRequest) {
 
   await prisma.socialQueueItem.createMany({
     data: [
-      { articleId, network: "facebook",  message: fbText, imageUrl, scheduledAt: slot },
-      { articleId, network: "instagram", message: igText, imageUrl, scheduledAt: slot },
+      { articleId, network: "facebook",  message: fbText, imageUrl,                      scheduledAt: slot },
+      { articleId, network: "instagram", message: igText, imageUrl: toInstagramUrl(imageUrl), scheduledAt: slot },
     ],
   });
 
