@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-export const FB_API = "https://graph.facebook.com/v19.0";
+export const FB_API  = "https://graph.facebook.com/v19.0";
 
 export async function fetchUnsplashImage(query: string): Promise<string | null> {
   if (!process.env.UNSPLASH_ACCESS_KEY) return null;

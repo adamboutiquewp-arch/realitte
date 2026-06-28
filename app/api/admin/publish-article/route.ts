@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import {
-  getSocialCredentials, buildFbText, buildIgText,
-  postToFacebook, postToInstagram, nextSlot, getLatestSlotMs, SITE_URL,
+  buildFbText, buildIgText,
+  nextSlot, getLatestSlotMs, SITE_URL,
   fetchUnsplashImage, fetchInstagramImage,
 } from "@/lib/social-posting";
 
@@ -20,20 +20,15 @@ export async function POST(req: NextRequest) {
   });
   if (!article) return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
 
-  // File vide = publication immédiate, sinon = mise en file
-  const [pendingArticles, pendingSocial] = await Promise.all([
-    prisma.article.count({ where: { statut: "PENDING", scheduledFor: { not: null } } }),
-    prisma.socialQueueItem.count({ where: { statut: "PENDING" } }),
-  ]);
-  const queueVide = pendingArticles === 0 && pendingSocial === 0;
-
   const now = new Date();
-  const { pageId, pageToken, igUserId } = await getSocialCredentials();
-  const articleUrl = `${SITE_URL}/${article.categorie.slug}/${article.slug}`;
-  const fbText = buildFbText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags);
-  const igText = buildIgText(article.titre, article.chapo, article.tags);
 
-  // Image Facebook : image de l'article ou Unsplash landscape en fallback
+  // 1. Publier l'article IMMÉDIATEMENT sur le site
+  await prisma.article.update({
+    where: { id: articleId },
+    data: { statut: "PUBLISHED", datePublication: now },
+  });
+
+  // 2. Image Facebook (originale ou Unsplash landscape)
   let imageUrl = article.imageUrl;
   if (!imageUrl) {
     imageUrl = await fetchUnsplashImage(article.tags[0] || article.titre);
@@ -42,56 +37,20 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Image Instagram : toujours carré 1:1 via Unsplash pour éviter les erreurs de ratio
+  // 3. Image Instagram : toujours carré 1:1 garanti via Unsplash
   const igImageUrl = await fetchInstagramImage(article.tags[0] || article.titre) || imageUrl;
 
-  if (queueVide) {
-    // Publication immédiate sur le site
-    await prisma.article.update({
-      where: { id: articleId },
-      data: { statut: "PUBLISHED", datePublication: now },
-    });
-
-    // Post Facebook immédiat
-    const fbOk = await postToFacebook(pageId, pageToken, fbText, articleUrl, imageUrl)
-      .then(() => true)
-      .catch(async (err) => {
-        await prisma.socialQueueItem.create({
-          data: { articleId, network: "facebook", message: fbText, imageUrl, scheduledAt: now, erreur: String(err) },
-        });
-        return false;
-      });
-
-    // Post Instagram immédiat (image carrée dédiée)
-    let igOk = false;
-    if (igImageUrl && igUserId && pageToken) {
-      igOk = await postToInstagram(igUserId, pageToken, igText, igImageUrl)
-        .then(() => true)
-        .catch(async (err) => {
-          await prisma.socialQueueItem.create({
-            data: { articleId, network: "instagram", message: igText, imageUrl: igImageUrl, scheduledAt: now, erreur: String(err) },
-          });
-          return false;
-        });
-    }
-
-    return NextResponse.json({ ok: true, mode: "immediate", fbOk, igOk });
-  }
-
-  // Mise en file : article + posts sociaux au même créneau
+  // 4. FB + IG toujours en file — jamais de post immédiat (évite les bugs de timing et les erreurs Meta)
+  const fbText = buildFbText(article.titre, article.chapo, article.slug, article.categorie.slug, article.tags);
+  const igText = buildIgText(article.titre, article.chapo, article.tags);
   const slot = nextSlot(await getLatestSlotMs());
-
-  await prisma.article.update({
-    where: { id: articleId },
-    data: { scheduledFor: slot },
-  });
 
   await prisma.socialQueueItem.createMany({
     data: [
-      { articleId, network: "facebook",  message: fbText, imageUrl,       scheduledAt: slot },
+      { articleId, network: "facebook",  message: fbText, imageUrl,            scheduledAt: slot },
       { articleId, network: "instagram", message: igText, imageUrl: igImageUrl, scheduledAt: slot },
     ],
   });
 
-  return NextResponse.json({ ok: true, mode: "queued", scheduledFor: slot });
+  return NextResponse.json({ ok: true, scheduledFor: slot });
 }
