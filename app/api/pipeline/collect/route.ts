@@ -61,6 +61,16 @@ const RSS_SOURCES = [
   { url: "https://siecledigital.fr/feed/",                               nom: "Siècle Digital",        categorie: "createurs", sousCategorie: "Tech & Créa" },
   { url: "https://www.madmoizelle.com/feed",                             nom: "Madmoizelle",           categorie: "createurs", sousCategorie: null },
 
+  // ── Intelligence Artificielle ─────────────────────────────
+  { url: "https://www.lemonde.fr/intelligence-artificielle/rss_full.xml", nom: "Le Monde IA",          categorie: "ia", sousCategorie: null },
+  { url: "https://www.lesechos.fr/tech-medias/rss.xml",                  nom: "Les Échos Tech",        categorie: "ia", sousCategorie: null },
+  { url: "https://venturebeat.com/category/ai/feed/",                    nom: "VentureBeat AI",        categorie: "ia", sousCategorie: null },
+  { url: "https://techcrunch.com/category/artificial-intelligence/feed/",nom: "TechCrunch AI",         categorie: "ia", sousCategorie: null },
+  { url: "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml", nom: "The Verge AI",    categorie: "ia", sousCategorie: null },
+  { url: "https://www.technologyreview.com/feed/",                       nom: "MIT Tech Review",       categorie: "ia", sousCategorie: null },
+  { url: "https://www.clubic.com/feed/rss.xml",                          nom: "Clubic",                categorie: "ia", sousCategorie: null },
+  { url: "https://www.artificialintelligence-news.com/feed/",            nom: "AI News",               categorie: "ia", sousCategorie: null },
+
   // ── International ─────────────────────────────────────────
   { url: "https://feeds.bbci.co.uk/news/world/rss.xml",                  nom: "BBC World",             categorie: "actu", sousCategorie: null },
   { url: "https://www.theguardian.com/world/rss",                        nom: "The Guardian",          categorie: "actu", sousCategorie: null },
@@ -109,6 +119,13 @@ export async function GET(req: NextRequest) {
   if (cronSecret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
+
+  // Assure que la catégorie IA existe en base (idempotent)
+  await prisma.categorie.upsert({
+    where: { slug: "ia" },
+    update: {},
+    create: { nom: "IA", slug: "ia", couleur: "#0284C7", ordre: 10 },
+  });
 
   // Filtre par catégories si spécifiées (?categories=sport,politique)
   const catsParam = req.nextUrl.searchParams.get("categories");

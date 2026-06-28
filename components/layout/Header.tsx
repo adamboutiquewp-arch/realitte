@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { label: "Sport",         href: "/sport",         couleur: "#1565C0" },
   { label: "Politique",     href: "/politique",     couleur: "#6A1B9A" },
   { label: "Créateurs",     href: "/createurs",     couleur: "#7C3AED" },
+  { label: "IA",            href: "/ia",            couleur: "#0284C7" },
   { label: "Entrepreneurs", href: "/entrepreneurs", couleur: "#C9A84C" },
 ];
 
@@ -22,6 +23,7 @@ const NAV_GROUPES = [
       { label: "Sport",         href: "/sport",         couleur: "#1565C0" },
       { label: "Politique",     href: "/politique",     couleur: "#6A1B9A" },
       { label: "Créateurs",     href: "/createurs",     couleur: "#7C3AED" },
+      { label: "IA",            href: "/ia",            couleur: "#0284C7" },
       { label: "Entrepreneurs", href: "/entrepreneurs", couleur: "#C9A84C" },
     ],
   },

@@ -56,10 +56,17 @@ Règles impératives :
 
 const PROMPT_USER = (source: { titreOriginal: string; contenuBrut: string; url: string }, categorieSource?: string | null) => {
   const isCreateurs = categorieSource === "createurs";
+  const isIA = categorieSource === "ia";
   const categorieInstruction = isCreateurs
     ? `IMPORTANT : Cette source provient de la catégorie CRÉATEURS DE CONTENU.
 - Si l'article ne parle PAS d'un créateur de contenu (YouTubeur, TikTokeur, streamer, podcasteur, influenceur, personnalité des réseaux sociaux), réponds avec : {"skip": true}
 - Si l'article parle bien d'un créateur, rédige-le en mettant en avant son parcours, sa communauté, son impact numérique.`
+    : isIA
+    ? `IMPORTANT : Cette source provient de la catégorie INTELLIGENCE ARTIFICIELLE.
+- Si l'article ne parle PAS d'IA, de machine learning, d'automatisation ou de technologie numérique, réponds avec : {"skip": true}
+- Vulgarise les concepts techniques pour un lecteur non-expert.
+- Mets en avant l'impact concret sur la vie quotidienne, les emplois ou les entreprises.
+- Le ton doit rester accessible, sans jargon inutile.`
     : "";
 
   return `Source URL: ${source.url}
@@ -71,7 +78,7 @@ Génère un article complet en JSON avec cette structure exacte :
   "titre": "Titre accrocheur SEO (max 80 chars)",
   "chapo": "Chapô de 2 phrases max, résumé percutant",
   "contenu": "<p>Corps de l'article en HTML...</p>",
-  "categorieSlug": "actu|sport|politique|createurs",
+  "categorieSlug": "actu|sport|politique|createurs|ia",
   "sousCategorie": "Sous-catégorie précise ou null",
   "personnageNom": "Prénom Nom de la personnalité principale si l'article parle d'une personne réelle, sinon null",
   "tags": ["tag1", "tag2", "tag3"],
@@ -175,6 +182,15 @@ export async function GET(req: NextRequest) {
           data: { traite: true },
         });
         continue;
+      }
+
+      // La catégorie "ia" est auto-créée si elle n'existe pas encore
+      if (parsed.categorieSlug === "ia") {
+        await prisma.categorie.upsert({
+          where: { slug: "ia" },
+          update: {},
+          create: { nom: "IA", slug: "ia", couleur: "#0284C7", ordre: 10 },
+        });
       }
 
       let categorie = await prisma.categorie.findUnique({
