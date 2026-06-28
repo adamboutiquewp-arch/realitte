@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
-import PipelineCard from "@/components/admin/PipelineCard";
 
 export const metadata: Metadata = { title: "Tableau de bord" };
 export const dynamic = "force-dynamic";
@@ -17,7 +16,6 @@ async function getStats() {
     topArticles,
     dernieresPending,
     totalAvisPending,
-    lastLog,
   ] = await Promise.all([
     prisma.article.count({ where: { statut: "PUBLISHED" } }),
     prisma.article.count({ where: { statut: "PENDING" } }),
@@ -37,7 +35,6 @@ async function getStats() {
       include: { categorie: { select: { nom: true, couleur: true } } },
     }),
     prisma.avis.count({ where: { statut: "PENDING" } }),
-    prisma.pipelineLog.findFirst({ orderBy: { dateCreation: "desc" } }),
   ]);
 
   // File d'attente — table peut ne pas encore exister (avant déploiement)
@@ -69,7 +66,6 @@ async function getStats() {
     topArticles,
     dernieresPending,
     totalAvisPending,
-    lastLog,
     articlesEnFile,
     socialEnFile,
   };
@@ -290,10 +286,8 @@ export default async function AdminDashboard() {
         </div>
       )}
 
-      {/* Pipeline + Actions rapides */}
+      {/* Actions rapides */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PipelineCard lastLog={stats.lastLog} />
-
         <div className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
           <div className="px-6 py-4 border-b border-[#F0F0F0]">
             <h2 className="text-[14px] font-bold text-[#111]">Raccourcis</h2>
