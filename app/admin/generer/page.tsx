@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import GenerateurCustom from "@/components/admin/GenerateurCustom";
+import ResetSourcesPanel from "./ResetSourcesPanel";
 
 export const metadata: Metadata = { title: "Générer un article" };
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export default async function GenererPage() {
         </p>
       </div>
       <GenerateurCustom categories={categories} />
+      <ResetSourcesPanel categories={categories} />
     </div>
   );
 }

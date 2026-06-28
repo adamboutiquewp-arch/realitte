@@ -7,6 +7,7 @@ const CATEGORIES = [
   { slug: "sport",     label: "Sport",     color: "#1565C0" },
   { slug: "politique", label: "Politique", color: "#6A1B9A" },
   { slug: "createurs", label: "Créateurs", color: "#7C3AED" },
+  { slug: "ia",        label: "IA",        color: "#0284C7" },
 ];
 
 interface PipelineCardProps {
@@ -53,29 +54,6 @@ export default function PipelineCard({ lastLog }: PipelineCardProps) {
   };
 
   const totalArticles = Object.values(config).reduce((s, n) => s + n, 0);
-
-  const resetSources = async () => {
-    if (selectedSlugs.length === 0) return;
-    const label = selectedSlugs.join(", ");
-    if (!confirm(`Réinitialiser les sources non-utilisées de : ${label} ?`)) return;
-    try {
-      let totalReset = 0;
-      for (const slug of selectedSlugs) {
-        const res = await fetch("/api/admin/pipeline-reset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ categorie: slug }),
-        });
-        const data = await res.json();
-        totalReset += data.reset ?? 0;
-      }
-      setCollectMsg(`${totalReset} source(s) remises à zéro — relance la collecte`);
-      setCollectState("ok");
-    } catch {
-      setCollectMsg("Erreur lors de la réinitialisation");
-      setCollectState("error");
-    }
-  };
 
   async function trigger(
     type: "collect" | "generate",
@@ -272,17 +250,10 @@ export default function PipelineCard({ lastLog }: PipelineCardProps) {
           </button>
         </div>
 
-        <div className="border-t border-[#F5F5F5] pt-3 flex items-center justify-between">
+        <div className="border-t border-[#F5F5F5] pt-3">
           <p className="text-[10px] text-[#ccc]">
             Le pipeline se lance aussi automatiquement tous les jours à 9h
           </p>
-          <button
-            onClick={resetSources}
-            disabled={selectedSlugs.length === 0}
-            className="text-[10px] text-[#bbb] hover:text-[#E53935] underline transition-colors disabled:opacity-30"
-          >
-            Réinitialiser les sources skippées
-          </button>
         </div>
       </div>
     </div>
