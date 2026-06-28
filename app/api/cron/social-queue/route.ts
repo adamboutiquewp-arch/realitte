@@ -1,37 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-const FB_API = "https://graph.facebook.com/v19.0";
-
-async function postToFacebook(pageId: string, token: string, message: string, articleUrl: string, imageUrl?: string | null) {
-  if (imageUrl) {
-    const params = new URLSearchParams({ url: imageUrl, message, access_token: token });
-    const res = await fetch(`${FB_API}/${pageId}/photos`, { method: "POST", body: params });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error?.message || "Erreur Facebook photo");
-    return data.post_id || data.id;
-  } else {
-    const params = new URLSearchParams({ message, link: articleUrl, access_token: token });
-    const res = await fetch(`${FB_API}/${pageId}/feed`, { method: "POST", body: params });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error?.message || "Erreur Facebook feed");
-    return data.id;
-  }
-}
-
-async function postToInstagram(igUserId: string, token: string, message: string, imageUrl: string) {
-  const containerParams = new URLSearchParams({ image_url: imageUrl, caption: message, access_token: token });
-  const containerRes = await fetch(`${FB_API}/${igUserId}/media`, { method: "POST", body: containerParams });
-  const containerData = await containerRes.json();
-  if (!containerRes.ok || containerData.error) throw new Error(containerData.error?.message || "Erreur Instagram media");
-
-  const publishParams = new URLSearchParams({ creation_id: containerData.id, access_token: token });
-  const publishRes = await fetch(`${FB_API}/${igUserId}/media_publish`, { method: "POST", body: publishParams });
-  const publishData = await publishRes.json();
-  if (!publishRes.ok || publishData.error) throw new Error(publishData.error?.message || "Erreur Instagram publish");
-
-  return publishData.id;
-}
+import { getSocialCredentials, postToFacebook, postToInstagram, SITE_URL } from "@/lib/social-posting";
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("x-cron-secret");
@@ -44,14 +13,10 @@ export async function GET(req: NextRequest) {
   let postsTraites = 0;
   const errors: string[] = [];
 
-  // 1. Publier les articles dont la date de publication est arrivée
+  // 1. Publier les articles dus
   const articlesDus = await prisma.article.findMany({
-    where: {
-      statut: "PENDING",
-      scheduledFor: { not: null, lte: now },
-    },
+    where: { statut: "PENDING", scheduledFor: { not: null, lte: now } },
   });
-
   for (const article of articlesDus) {
     try {
       await prisma.article.update({
@@ -64,32 +29,19 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 2. Traiter les posts réseaux sociaux en attente
+  // 2. Traiter les posts sociaux dus
   const postsDus = await prisma.socialQueueItem.findMany({
-    where: {
-      statut: "PENDING",
-      scheduledAt: { lte: now },
-    },
-    include: {
-      article: { include: { categorie: { select: { slug: true } } } },
-    },
+    where: { statut: "PENDING", scheduledAt: { lte: now } },
+    include: { article: { include: { categorie: { select: { slug: true } } } } },
     orderBy: { scheduledAt: "asc" },
   });
 
   if (postsDus.length > 0) {
-    const configs = await prisma.siteConfig.findMany({
-      where: { cle: { in: ["facebook_page_id", "facebook_page_token", "instagram_user_id"] } },
-    });
-    const get = (cle: string) => configs.find((c) => c.cle === cle)?.valeur || "";
-    const pageId    = get("facebook_page_id");
-    const pageToken = get("facebook_page_token");
-    const igUserId  = get("instagram_user_id");
-    const SITE_URL  = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
+    const { pageId, pageToken, igUserId } = await getSocialCredentials();
 
     for (const item of postsDus) {
       try {
         const articleUrl = `${SITE_URL}/${item.article.categorie.slug}/${item.article.slug}`;
-
         if (item.network === "instagram") {
           if (!igUserId || !pageToken) throw new Error("Instagram non configuré");
           if (!item.imageUrl) throw new Error("Image requise pour Instagram");
@@ -98,7 +50,6 @@ export async function GET(req: NextRequest) {
           if (!pageId || !pageToken) throw new Error("Facebook non configuré");
           await postToFacebook(pageId, pageToken, item.message, articleUrl, item.imageUrl);
         }
-
         await prisma.socialQueueItem.update({
           where: { id: item.id },
           data: { statut: "DONE", processedAt: now },
