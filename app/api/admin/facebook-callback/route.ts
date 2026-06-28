@@ -39,19 +39,32 @@ export async function GET(req: NextRequest) {
   const accountsRes = await fetch(`${FB_API}/me/accounts?access_token=${longToken}`);
   const accountsData = await accountsRes.json();
 
-  if (!accountsData.data || accountsData.data.length === 0) {
-    return NextResponse.redirect(
-      `https://www.realitte.com/admin/facebook-connect?error=${encodeURIComponent("Aucune page trouvée. Assure-toi d'avoir sélectionné ta page Realitte.")}`
+  let pageToken = "";
+  let pageId    = "";
+
+  if (accountsData.data && accountsData.data.length > 0) {
+    // Token de page via /me/accounts
+    const page = accountsData.data.find(
+      (p: { name: string }) => p.name.toLowerCase().includes("realitte")
+    ) || accountsData.data[0];
+    pageToken = page.access_token;
+    pageId    = page.id;
+  } else {
+    // Fallback : récupère le token de page directement via l'ID connu
+    const knownPageId = "1163796830151892";
+    const pageRes = await fetch(
+      `${FB_API}/${knownPageId}?fields=access_token,id,name&access_token=${longToken}`
     );
+    const pageData = await pageRes.json();
+    if (pageData.access_token) {
+      pageToken = pageData.access_token;
+      pageId    = pageData.id;
+    } else {
+      // Dernier recours : utilise le long token utilisateur directement
+      pageToken = longToken;
+      pageId    = knownPageId;
+    }
   }
-
-  // 4. Trouve la page Realitte (ou prend la première)
-  const page = accountsData.data.find(
-    (p: { name: string }) => p.name.toLowerCase().includes("realitte")
-  ) || accountsData.data[0];
-
-  const pageToken = page.access_token;
-  const pageId    = page.id;
 
   // 5. Récupère l'ID Instagram lié à la page
   let igId = "";
