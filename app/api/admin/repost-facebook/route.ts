@@ -7,10 +7,16 @@ export async function POST() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
 
+  // Annule les anciens reposts en attente
+  await prisma.socialQueueItem.deleteMany({
+    where: { network: "facebook", statut: "PENDING" },
+  });
+
   const articles = await prisma.article.findMany({
     where: { statut: "PUBLISHED" },
     include: { categorie: { select: { slug: true } } },
-    orderBy: { datePublication: "asc" },
+    orderBy: { datePublication: "desc" },
+    take: 5,
   });
 
   if (articles.length === 0) {
