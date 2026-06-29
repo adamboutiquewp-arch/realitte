@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import SearchModal from "./SearchModal";
+import PushSubscribeButton from "@/components/PushSubscribeButton";
 
 const NAV_ITEMS = [
   { label: "Actu",           href: "/actu",          couleur: "#E53935" },
@@ -150,12 +151,15 @@ export default function Header({ socialLinks = [] }: { socialLinks?: SocialLink[
               >
                 <SearchIcon size={20} />
               </button>
-              <Link
-                href="/newsletter"
-                className="hidden md:inline-flex items-center px-5 py-2.5 bg-black text-white text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] transition-colors duration-200"
-              >
-                S&apos;abonner
-              </Link>
+              <div className="hidden md:flex items-center gap-2">
+                <PushSubscribeButton />
+                <Link
+                  href="/newsletter"
+                  className="inline-flex items-center px-5 py-2.5 bg-black text-white text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] transition-colors duration-200"
+                >
+                  S&apos;abonner
+                </Link>
+              </div>
             </div>
           </div>
         </div>

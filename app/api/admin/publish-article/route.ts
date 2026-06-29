@@ -7,6 +7,7 @@ import {
   fetchInstagramImage, toInstagramUrl,
   getSocialCredentials, postToFacebook, postToInstagram, SITE_URL,
 } from "@/lib/social-posting";
+import { sendPushToAll } from "@/lib/push-notifications";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -65,6 +66,13 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       console.error("IG immédiat:", err);
     }
+
+    // Notification push — fire & forget
+    sendPushToAll(
+      article.titre,
+      article.chapo?.slice(0, 100) || "Nouvel article sur Réalitte",
+      articleUrl
+    ).catch(() => {});
 
     return NextResponse.json({ ok: true, mode: "immediate", fbOk, igOk });
   }

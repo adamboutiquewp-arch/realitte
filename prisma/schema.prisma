@@ -194,6 +194,16 @@ model SocialQueueItem {
   @@map("social_queue_items")
 }
 
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique @db.Text
+  p256dh    String   @db.Text
+  auth      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("push_subscriptions")
+}
+
 model PipelineLog {
   id          String   @id @default(cuid())
   type        String   // collect | generate | error
