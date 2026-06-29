@@ -1,16 +1,18 @@
-import webpush from "web-push";
 import { prisma } from "@/lib/prisma";
 
-const VAPID_PUBLIC  = process.env.VAPID_PUBLIC_KEY!;
-const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY!;
-const SITE_URL      = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
-
-if (VAPID_PUBLIC && VAPID_PRIVATE) {
-  webpush.setVapidDetails(`mailto:contact@realitte.com`, VAPID_PUBLIC, VAPID_PRIVATE);
-}
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com").replace(/\/$/, "");
 
 export async function sendPushToAll(title: string, body: string, url: string) {
+  const VAPID_PUBLIC  = process.env.VAPID_PUBLIC_KEY;
+  const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
+  if (!VAPID_PUBLIC || !VAPID_PRIVATE) return { sent: 0, removed: 0 };
+
+  const webpush = (await import("web-push")).default;
+  webpush.setVapidDetails(`mailto:contact@realitte.com`, VAPID_PUBLIC, VAPID_PRIVATE);
+
   const subs = await prisma.pushSubscription.findMany();
+  if (subs.length === 0) return { sent: 0, removed: 0 };
+
   const payload = JSON.stringify({ title, body, url });
   const dead: string[] = [];
 
