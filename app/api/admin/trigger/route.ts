@@ -24,17 +24,8 @@ export async function POST(req: Request) {
     url.searchParams.set("categoryConfig", JSON.stringify(categoryConfig));
   }
 
-  try {
-    const res = await fetch(url.toString(), {
-      headers: { "x-cron-secret": secret },
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Erreur pipeline");
-    return NextResponse.json(data);
-  } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Erreur" },
-      { status: 500 }
-    );
-  }
+  // Fire & forget — ne pas attendre la fin du pipeline (évite le timeout 504)
+  fetch(url.toString(), { headers: { "x-cron-secret": secret } }).catch(() => {});
+
+  return NextResponse.json({ ok: true, started: true, type });
 }
