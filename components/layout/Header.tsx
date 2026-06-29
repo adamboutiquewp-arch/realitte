@@ -142,8 +142,8 @@ export default function Header({ socialLinks = [] }: { socialLinks?: SocialLink[
               ))}
             </nav>
 
-            {/* Droite : recherche + S'abonner */}
-            <div className="flex items-center gap-3">
+            {/* Droite : recherche + notifications + S'abonner */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
                 aria-label="Rechercher"
@@ -151,15 +151,17 @@ export default function Header({ socialLinks = [] }: { socialLinks?: SocialLink[
               >
                 <SearchIcon size={20} />
               </button>
-              <div className="hidden md:flex items-center gap-2">
+              {/* Mobile : bouton notifications */}
+              <div className="md:hidden">
                 <PushSubscribeButton />
-                <Link
-                  href="/newsletter"
-                  className="inline-flex items-center px-5 py-2.5 bg-black text-white text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] transition-colors duration-200"
-                >
-                  S&apos;abonner
-                </Link>
               </div>
+              {/* Desktop : S'abonner */}
+              <Link
+                href="/newsletter"
+                className="hidden md:inline-flex items-center px-5 py-2.5 bg-black text-white text-[12px] font-bold tracking-widest uppercase hover:bg-[#E53935] transition-colors duration-200"
+              >
+                S&apos;abonner
+              </Link>
             </div>
           </div>
         </div>

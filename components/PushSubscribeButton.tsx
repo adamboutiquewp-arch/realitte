@@ -64,9 +64,11 @@ export default function PushSubscribeButton() {
     return (
       <button
         onClick={unsubscribe}
-        className="flex items-center gap-2 px-4 py-2 text-[11px] font-bold tracking-widest uppercase border border-[#E0E0E0] text-[#9E9E9E] hover:border-[#E53935] hover:text-[#E53935] transition-colors"
+        aria-label="Désactiver les notifications"
+        className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white"
+        title="Notifications activées — cliquer pour désactiver"
       >
-        🔔 Notifications activées
+        🔔
       </button>
     );
   }
@@ -74,9 +76,11 @@ export default function PushSubscribeButton() {
   return (
     <button
       onClick={subscribe}
-      className="flex items-center gap-2 px-4 py-2 text-[11px] font-bold tracking-widest uppercase bg-[#E53935] text-white hover:bg-[#c62828] transition-colors"
+      aria-label="Recevoir les alertes"
+      className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white hover:bg-[#c62828] transition-colors"
+      title="Recevoir les alertes"
     >
-      🔔 Recevoir les alertes
+      🔔
     </button>
   );
 }
