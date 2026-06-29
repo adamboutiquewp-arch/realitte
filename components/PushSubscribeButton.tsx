@@ -11,7 +11,7 @@ function urlBase64ToUint8Array(base64String: string) {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 }
 
-type Status = "idle" | "loading" | "subscribed" | "denied" | "unsupported" | "error";
+type Status = "idle" | "confirm" | "loading" | "subscribed" | "denied" | "unsupported" | "error";
 
 export default function PushSubscribeButton() {
   const [status, setStatus] = useState<Status>("idle");
@@ -21,19 +21,20 @@ export default function PushSubscribeButton() {
       setStatus("unsupported");
       return;
     }
-    navigator.serviceWorker.ready.then((reg) =>
-      reg.pushManager.getSubscription().then((sub) => {
-        if (sub) setStatus("subscribed");
-        else if (Notification.permission === "denied") setStatus("denied");
-      })
-    ).catch(() => setStatus("unsupported"));
+    navigator.serviceWorker.ready
+      .then((reg) =>
+        reg.pushManager.getSubscription().then((sub) => {
+          if (sub) setStatus("subscribed");
+          else if (Notification.permission === "denied") setStatus("denied");
+        })
+      )
+      .catch(() => setStatus("unsupported"));
   }, []);
 
-  async function subscribe() {
+  async function doSubscribe() {
     if (!VAPID_PUBLIC) { setStatus("error"); return; }
     setStatus("loading");
     try {
-      // Demander la permission explicitement
       const permission = await Notification.requestPermission();
       if (permission === "denied") { setStatus("denied"); return; }
       if (permission !== "granted") { setStatus("idle"); return; }
@@ -73,59 +74,61 @@ export default function PushSubscribeButton() {
       }
       setStatus("idle");
     } catch {
-      setStatus("error");
-      setTimeout(() => setStatus("subscribed"), 3000);
+      setStatus("subscribed");
     }
   }
 
   if (status === "unsupported" || status === "denied") return null;
 
-  if (status === "loading") {
-    return (
-      <button
-        disabled
-        aria-label="Chargement…"
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white opacity-60"
-      >
-        ⏳
-      </button>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <button
-        disabled
-        aria-label="Erreur"
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-400 text-white"
-        title="Erreur — réessayer"
-      >
-        ⚠️
-      </button>
-    );
-  }
-
-  if (status === "subscribed") {
-    return (
-      <button
-        onClick={unsubscribe}
-        aria-label="Désactiver les notifications"
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white"
-        title="Notifications activées — appuyer pour désactiver"
-      >
-        🔔
-      </button>
-    );
-  }
-
   return (
-    <button
-      onClick={subscribe}
-      aria-label="Recevoir les alertes"
-      className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white hover:bg-[#c62828] transition-colors active:scale-95"
-      title="Recevoir les alertes"
-    >
-      🔔
-    </button>
+    <>
+      {/* Bouton cloche */}
+      {status === "loading" ? (
+        <button disabled aria-label="Chargement…"
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white opacity-60">
+          ⏳
+        </button>
+      ) : status === "subscribed" ? (
+        <button onClick={unsubscribe} aria-label="Désactiver les notifications"
+          title="Notifications activées — appuyer pour désactiver"
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white">
+          🔔
+        </button>
+      ) : (
+        <button onClick={() => setStatus("confirm")} aria-label="Recevoir les alertes"
+          title="Recevoir les alertes"
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white hover:bg-[#c62828] transition-colors active:scale-95">
+          🔔
+        </button>
+      )}
+
+      {/* Modal de confirmation */}
+      {status === "confirm" && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center px-6"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col items-center gap-5">
+            <div className="text-5xl">🔔</div>
+            <div className="text-center">
+              <p className="text-[18px] font-bold text-[#111] mb-2">Activer les notifications</p>
+              <p className="text-[14px] text-[#666] leading-relaxed">
+                Recevez une alerte sur votre téléphone dès qu'un nouvel article est publié sur Réalitte.
+              </p>
+            </div>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setStatus("idle")}
+                className="flex-1 py-3 rounded-xl border border-[#E0E0E0] text-[14px] font-semibold text-[#666] hover:bg-[#F5F5F5] transition-colors">
+                Annuler
+              </button>
+              <button
+                onClick={doSubscribe}
+                className="flex-1 py-3 rounded-xl bg-[#E53935] text-white text-[14px] font-bold hover:bg-[#c62828] transition-colors">
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
