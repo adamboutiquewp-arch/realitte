@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { getSocialCredentials, postToFacebook, postToInstagram, SITE_URL } from "@/lib/social-posting";
+import { getSocialCredentials, postToFacebook, postToInstagram, toInstagramUrl, SITE_URL } from "@/lib/social-posting";
 
 export async function POST() {
   const session = await auth();
@@ -31,7 +31,7 @@ export async function POST() {
   // 2. Traiter les posts sociaux dus
   const postsDus = await prisma.socialQueueItem.findMany({
     where: { statut: "PENDING", scheduledAt: { lte: now } },
-    include: { article: { include: { categorie: { select: { slug: true } } } } },
+    include: { article: { select: { slug: true, imageUrl: true, categorie: { select: { slug: true } } } } },
     orderBy: { scheduledAt: "asc" },
   });
 
@@ -43,8 +43,10 @@ export async function POST() {
         const articleUrl = `${SITE_URL}/${item.article.categorie.slug}/${item.article.slug}`;
         if (item.network === "instagram") {
           if (!igUserId || !pageToken) throw new Error("Instagram non configuré");
-          if (!item.imageUrl) throw new Error("Image requise pour Instagram");
-          await postToInstagram(igUserId, pageToken, item.message, item.imageUrl);
+          // Toujours utiliser l'image de l'article (même photo que le site), jamais l'URL wsrv.nl stockée
+          const igImage = toInstagramUrl(item.article.imageUrl || item.imageUrl);
+          if (!igImage) throw new Error("Image requise pour Instagram");
+          await postToInstagram(igUserId, pageToken, item.message, igImage);
         } else {
           if (!pageId || !pageToken) throw new Error("Facebook non configuré");
           await postToFacebook(pageId, pageToken, item.message, articleUrl, item.imageUrl);
