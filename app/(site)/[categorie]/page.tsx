@@ -120,23 +120,6 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
     ? `${siteUrl}/${catSlug}`
     : `${siteUrl}/${catSlug}?page=${currentPage}`;
 
-  const collectionJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: `${categorie.nom} — Réalitte`,
-    description: catDescription,
-    url: canonical,
-    mainEntity: {
-      "@type": "ItemList",
-      itemListElement: mappedArticles.map((a, i) => ({
-        "@type": "ListItem",
-        position: skip + i + 1,
-        url: `${siteUrl}/${catSlug}/${a.slug}`,
-        name: a.titre,
-      })),
-    },
-  };
-
   function absUrl(page: number) {
     const p = new URLSearchParams();
     if (sous && sous !== "Tout") p.set("sous", sous);
@@ -166,6 +149,23 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
       couleur: a.categorie.couleur,
     },
   }));
+
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${categorie.nom} — Réalitte`,
+    description: catDescription,
+    url: canonical,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: mappedArticles.map((a, i) => ({
+        "@type": "ListItem",
+        position: skip + i + 1,
+        url: `${siteUrl}/${catSlug}/${a.slug}`,
+        name: a.titre,
+      })),
+    },
+  };
 
   return (
     <>
