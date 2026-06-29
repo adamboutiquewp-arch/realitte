@@ -11,6 +11,18 @@ import type { ArticleCard as ArticleCardType } from "@/types";
 
 const ITEMS_PER_PAGE = 20;
 
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  actu:              "Toute l'actualité France et Monde en temps réel : politique, société, économie, faits divers. Analyses et décryptages quotidiens par Réalitte.",
+  sport:             "Résultats, classements, transferts et analyses : football, basket, tennis, F1, rugby. Toute l'actualité sportive sur Réalitte.",
+  economie:          "Marchés financiers, entreprises, emploi et conjoncture économique. Décryptages et analyses pour comprendre l'économie française et mondiale.",
+  politique:         "Réformes, élections, coulisses du pouvoir : toute l'actualité politique française et internationale, décryptée sans filtre par Réalitte.",
+  createurs:         "YouTube, TikTok, Twitch, podcast : l'actualité des créateurs de contenu, leurs succès, leurs projets et les tendances des réseaux sociaux.",
+  people:            "Stars, royauté, cinéma, musique et télé : toute l'actualité people et célébrités en exclusivité sur Réalitte.",
+  "success-stories": "Des parcours extraordinaires d'entrepreneurs, sportifs et personnalités qui ont transformé leur vie. L'inspiration au quotidien sur Réalitte.",
+  "sante-beaute":    "Conseils santé, tendances beauté, bien-être et nutrition. Tout pour prendre soin de vous au quotidien sur Réalitte.",
+  "fait-divers":     "Crimes, accidents, affaires judiciaires : les faits divers qui ont marqué la France, traités avec rigueur et respect par Réalitte.",
+};
+
 const SOUS_CATEGORIES: Record<string, string[]> = {
   sport:             ["Tout", "Football", "Basket", "Tennis", "F1", "Rugby"],
   economie:          ["Tout", "Finance", "Entreprises", "Marchés", "Emploi"],
@@ -43,14 +55,16 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const title = currentPage === 1
     ? `${cat.nom} — Réalitte`
     : `${cat.nom} — Page ${currentPage} — Réalitte`;
+  const description = CATEGORY_DESCRIPTIONS[catSlug]
+    || `Toute l'actualité ${cat.nom} sur Réalitte. Retrouvez nos derniers articles, analyses et décryptages.`;
 
   return {
     title,
-    description: `Toute l'actualité ${cat.nom} sur Réalitte. Retrouvez nos derniers articles, analyses et décryptages.`,
+    description,
     alternates: { canonical },
     openGraph: {
       title,
-      description: `Toute l'actualité ${cat.nom} sur Réalitte.`,
+      description,
       url: canonical,
       type: "website",
       locale: "fr_FR",
@@ -100,6 +114,29 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
   const sousCats = SOUS_CATEGORIES[catSlug] || ["Tout"];
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://realitte.com";
+  const catDescription = CATEGORY_DESCRIPTIONS[catSlug]
+    || `Toute l'actualité ${categorie.nom} sur Réalitte.`;
+  const canonical = currentPage === 1
+    ? `${siteUrl}/${catSlug}`
+    : `${siteUrl}/${catSlug}?page=${currentPage}`;
+
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${categorie.nom} — Réalitte`,
+    description: catDescription,
+    url: canonical,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: mappedArticles.map((a, i) => ({
+        "@type": "ListItem",
+        position: skip + i + 1,
+        url: `${siteUrl}/${catSlug}/${a.slug}`,
+        name: a.titre,
+      })),
+    },
+  };
+
   function absUrl(page: number) {
     const p = new URLSearchParams();
     if (sous && sous !== "Tout") p.set("sous", sous);
@@ -132,6 +169,10 @@ export default async function CategoriePage({ params, searchParams }: PageProps)
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+      />
       {/* Signaux de pagination pour les crawlers */}
       {prevUrl && <link rel="prev" href={prevUrl} />}
       {nextUrl && <link rel="next" href={nextUrl} />}

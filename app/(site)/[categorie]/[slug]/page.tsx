@@ -160,6 +160,19 @@ export default async function ArticlePage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
+      {/* ── Breadcrumb visuel ── */}
+      <nav aria-label="Fil d'Ariane" className="bg-[#F5F5F5] border-b border-[#E0E0E0]">
+        <div className="container-site px-5 py-2 flex items-center gap-2 text-[11px] text-[#9E9E9E] flex-wrap">
+          <Link href="/" className="hover:text-[#E53935] transition-colors whitespace-nowrap">Accueil</Link>
+          <span>/</span>
+          <Link href={`/${catSlug}`} className="hover:text-[#E53935] transition-colors whitespace-nowrap" style={{ color: article.categorie.couleur }}>
+            {article.categorie.nom}
+          </Link>
+          <span>/</span>
+          <span className="text-[#424242] font-medium line-clamp-1">{article.titre}</span>
+        </div>
+      </nav>
+
       {/* ── Hero article : image complète + titre DESSOUS (toujours) ── */}
       {article.imageUrl && (
         <div className="w-full bg-black">
