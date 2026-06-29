@@ -110,19 +110,11 @@ export async function getLatestSlotMs(): Promise<number> {
 export async function postToFacebook(
   pageId: string, token: string, message: string, articleUrl: string, imageUrl?: string | null
 ) {
-  if (imageUrl) {
-    const params = new URLSearchParams({ url: imageUrl, message, access_token: token });
-    const res = await fetch(`${FB_API}/${pageId}/photos`, { method: "POST", body: params });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error?.message || "Erreur Facebook photo");
-    return data.post_id || data.id;
-  } else {
-    const params = new URLSearchParams({ message, link: articleUrl, access_token: token });
-    const res = await fetch(`${FB_API}/${pageId}/feed`, { method: "POST", body: params });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error?.message || "Erreur Facebook feed");
-    return data.id;
-  }
+  const params = new URLSearchParams({ message, link: articleUrl, access_token: token });
+  const res = await fetch(`${FB_API}/${pageId}/feed`, { method: "POST", body: params });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error?.message || "Erreur Facebook feed");
+  return data.id;
 }
 
 export async function postToInstagram(igUserId: string, token: string, message: string, imageUrl: string) {
