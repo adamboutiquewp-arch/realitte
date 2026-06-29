@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSocialCredentials, postToFacebook, postToInstagram, SITE_URL } from "@/lib/social-posting";
+import { getSocialCredentials, postToFacebook, postToInstagram, toInstagramUrl, SITE_URL } from "@/lib/social-posting";
+import { sendPushToAll } from "@/lib/push-notifications";
 
 function isAuthorized(req: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
@@ -25,6 +26,7 @@ export async function GET(req: NextRequest) {
   // 1. Publier les articles dus
   const articlesDus = await prisma.article.findMany({
     where: { statut: "PENDING", scheduledFor: { not: null, lte: now } },
+    select: { id: true, titre: true, chapo: true, slug: true, imageUrl: true, categorie: { select: { slug: true } } },
   });
   for (const article of articlesDus) {
     try {
@@ -33,6 +35,13 @@ export async function GET(req: NextRequest) {
         data: { statut: "PUBLISHED", datePublication: now },
       });
       articlesPublies++;
+      // Notification push aux abonnés
+      const articleUrl = `${SITE_URL}/${article.categorie.slug}/${article.slug}`;
+      sendPushToAll(
+        article.titre,
+        article.chapo?.slice(0, 100) || "Nouvel article sur Réalitte",
+        articleUrl
+      ).catch(() => {});
     } catch (err) {
       errors.push(`Article ${article.id}: ${err instanceof Error ? err.message : "erreur"}`);
     }
@@ -41,7 +50,7 @@ export async function GET(req: NextRequest) {
   // 2. Traiter les posts sociaux dus
   const postsDus = await prisma.socialQueueItem.findMany({
     where: { statut: "PENDING", scheduledAt: { lte: now } },
-    include: { article: { include: { categorie: { select: { slug: true } } } } },
+    include: { article: { select: { slug: true, imageUrl: true, categorie: { select: { slug: true } } } } },
     orderBy: { scheduledAt: "asc" },
   });
 
@@ -53,8 +62,9 @@ export async function GET(req: NextRequest) {
         const articleUrl = `${SITE_URL}/${item.article.categorie.slug}/${item.article.slug}`;
         if (item.network === "instagram") {
           if (!igUserId || !pageToken) throw new Error("Instagram non configuré");
-          if (!item.imageUrl) throw new Error("Image requise pour Instagram");
-          await postToInstagram(igUserId, pageToken, item.message, item.imageUrl);
+          const igImage = toInstagramUrl(item.article.imageUrl || item.imageUrl);
+          if (!igImage) throw new Error("Image requise pour Instagram");
+          await postToInstagram(igUserId, pageToken, item.message, igImage);
         } else {
           if (!pageId || !pageToken) throw new Error("Facebook non configuré");
           await postToFacebook(pageId, pageToken, item.message, articleUrl, item.imageUrl);
