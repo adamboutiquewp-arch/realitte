@@ -15,6 +15,7 @@ type Status = "idle" | "confirm" | "loading" | "subscribed" | "denied" | "unsupp
 
 export default function PushSubscribeButton() {
   const [status, setStatus] = useState<Status>("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -32,30 +33,45 @@ export default function PushSubscribeButton() {
   }, []);
 
   async function doSubscribe() {
-    if (!VAPID_PUBLIC) { setStatus("error"); return; }
     setStatus("loading");
     try {
+      if (!VAPID_PUBLIC) throw new Error("Clé VAPID manquante côté client");
+
+      // Vérifier que le SW est enregistré
+      if (!("serviceWorker" in navigator)) throw new Error("Service Worker non supporté");
+      const reg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Service Worker timeout (10s)")), 10000)),
+      ]);
+
+      // Demander la permission
       const permission = await Notification.requestPermission();
       if (permission === "denied") { setStatus("denied"); return; }
       if (permission !== "granted") { setStatus("idle"); return; }
 
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.subscribe({
+      // S'abonner au push
+      const sub = await (reg as ServiceWorkerRegistration).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC),
       });
+
+      // Envoyer au serveur
       const subJson = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
       const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(subJson),
       });
-      if (!res.ok) throw new Error("Erreur serveur");
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Erreur serveur ${res.status}: ${text}`);
+      }
       setStatus("subscribed");
     } catch (err) {
-      console.error("Push subscribe error:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("Push subscribe error:", msg);
+      setErrorMsg(msg);
       setStatus("error");
-      setTimeout(() => setStatus("idle"), 3000);
     }
   }
 
@@ -78,7 +94,7 @@ export default function PushSubscribeButton() {
     }
   }
 
-  if (status === "unsupported" || status === "denied") return null;
+  if (status === "unsupported") return null;
 
   return (
     <>
@@ -88,18 +104,36 @@ export default function PushSubscribeButton() {
           className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white opacity-60">
           ⏳
         </button>
+      ) : status === "denied" ? (
+        <button disabled aria-label="Notifications bloquées"
+          title="Notifications bloquées dans les paramètres du navigateur"
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-300 text-white">
+          🔕
+        </button>
+      ) : status === "error" ? (
+        <button onClick={() => { setStatus("idle"); setErrorMsg(""); }} aria-label="Erreur — appuyer pour réessayer"
+          title={errorMsg}
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-orange-500 text-white">
+          ⚠️
+        </button>
       ) : status === "subscribed" ? (
         <button onClick={unsubscribe} aria-label="Désactiver les notifications"
           title="Notifications activées — appuyer pour désactiver"
-          className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white">
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-green-600 text-white">
           🔔
         </button>
       ) : (
         <button onClick={() => setStatus("confirm")} aria-label="Recevoir les alertes"
-          title="Recevoir les alertes"
           className="flex items-center justify-center w-9 h-9 rounded-full bg-[#E53935] text-white hover:bg-[#c62828] transition-colors active:scale-95">
           🔔
         </button>
+      )}
+
+      {/* Message d'erreur sous le bouton */}
+      {status === "error" && errorMsg && (
+        <div className="fixed bottom-4 left-4 right-4 z-[999] bg-red-600 text-white text-[12px] p-3 rounded-xl shadow-xl">
+          ❌ {errorMsg}
+        </div>
       )}
 
       {/* Modal de confirmation */}
@@ -115,13 +149,11 @@ export default function PushSubscribeButton() {
               </p>
             </div>
             <div className="flex gap-3 w-full">
-              <button
-                onClick={() => setStatus("idle")}
+              <button onClick={() => setStatus("idle")}
                 className="flex-1 py-3 rounded-xl border border-[#E0E0E0] text-[14px] font-semibold text-[#666] hover:bg-[#F5F5F5] transition-colors">
                 Annuler
               </button>
-              <button
-                onClick={doSubscribe}
+              <button onClick={doSubscribe}
                 className="flex-1 py-3 rounded-xl bg-[#E53935] text-white text-[14px] font-bold hover:bg-[#c62828] transition-colors">
                 OK
               </button>
