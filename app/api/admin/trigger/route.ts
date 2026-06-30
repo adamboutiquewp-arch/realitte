@@ -24,8 +24,8 @@ export async function POST(req: Request) {
     url.searchParams.set("categoryConfig", JSON.stringify(categoryConfig));
   }
 
-  // Fire & forget — ne pas attendre la fin du pipeline (évite le timeout 504)
-  fetch(url.toString(), { headers: { "x-cron-secret": secret } }).catch(() => {});
+  const pipelineRes = await fetch(url.toString(), { headers: { "x-cron-secret": secret } });
+  const data = await pipelineRes.json();
 
-  return NextResponse.json({ ok: true, started: true, type });
+  return NextResponse.json({ ok: true, ...data, type });
 }
